@@ -1,6 +1,10 @@
+import os
+
+# Lấy đường dẫn tới thư mục chính
+ROOT_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # Player
-ASSET_PATH_PLAYER = 'E:/Python/Project/tower-defense-pygame/graphics/player/'
+ASSET_PATH_PLAYER = os.path.join(ROOT_FOLDER_PATH, "../graphics/player/")
 
 ANIM_PLAYER_UP = 'up'
 ANIM_PLAYER_DOWN = 'down'
