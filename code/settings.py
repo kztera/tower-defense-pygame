@@ -5,11 +5,18 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 TILE_SIZE = 64
 
-# overlay positions
+# overlay
+OVERLAY_TOOL = 'tool'
+OVERLAY_DEFENSE_BASE = 'defense base'
+
+OVERLAY_TOOL_DISTANCE = 50
+OVERLAY_DEFENSE_BASE_DISTANCE = 70
+
 OVERLAY_POSITIONS = {
-    'tool': (40, SCREEN_HEIGHT - 15),
-    'defense base': (70, SCREEN_HEIGHT - 70)
+    OVERLAY_TOOL : (70, SCREEN_HEIGHT - 70),
+    OVERLAY_DEFENSE_BASE : (SCREEN_WIDTH - 70, SCREEN_HEIGHT - 70)
 }
+
 
 PLAYER_TOOL_OFFSET = {
     'left': Vector2(-50, 40),
@@ -18,18 +25,31 @@ PLAYER_TOOL_OFFSET = {
     'down': Vector2(0, 50)
 }
 
+# layer
+LAYER_WATER = 'water'
+LAYER_GROUND = 'ground'
+LAYER_SOIL = 'soil'
+LAYER_SOIL_WATER = 'soil water'
+LAYER_RAIN_FLOOR = 'rain floor'
+LAYER_HOUSE_BOTTOM = 'house bottom'
+LAYER_GROUND_PLANT = 'ground plant'
+LAYER_MAIN = 'main'
+LAYER_HOUSE_TOP = 'house top'
+LAYER_FRUIT = 'fruit'
+LAYER_RAIN_DROPS = 'rain drops'
+
 LAYERS = {
-    'water': 0,
-    'ground': 1,
-    'soil': 2,
-    'soil water': 3,
-    'rain floor': 4,
-    'house bottom': 5,
-    'ground plant': 6,
-    'main': 7,
-    'house top': 8,
-    'fruit': 9,
-    'rain drops': 10
+LAYER_WATER : 0,
+LAYER_GROUND : 1,
+LAYER_SOIL : 2,
+LAYER_SOIL_WATER : 3,
+LAYER_RAIN_FLOOR : 4,
+LAYER_HOUSE_BOTTOM : 5,
+LAYER_GROUND_PLANT : 6,
+LAYER_MAIN : 7,
+LAYER_HOUSE_TOP : 8,
+LAYER_FRUIT : 9,
+LAYER_RAIN_DROPS : 10
 }
 
 APPLE_POS = {
