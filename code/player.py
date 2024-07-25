@@ -101,6 +101,10 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.direction.x = 0
 
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEWHEEL:
+                print("change tool")
+
         # use tool
         if keys[pygame.K_SPACE]:
             # timer for use tool
