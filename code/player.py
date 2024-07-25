@@ -3,7 +3,9 @@ from settings import *
 from support import *
 from timeCounter import Timer
 
+from asset_path import ASSET_PATH_PLAYER
 from player_stats import *
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, group):
@@ -18,7 +20,7 @@ class Player(pygame.sprite.Sprite):
 
         # general setup
         self.image = self.animations[self.status][self.frame_index]
-        self.rect = self.image.get_rect(center = pos)
+        self.rect = self.image.get_rect(center=pos)
 
         # movement attributes
         self.direction = pygame.math.Vector2()
@@ -35,21 +37,33 @@ class Player(pygame.sprite.Sprite):
         self.defense_base_index = 0
         self.selected_defense_base = self.defense_bases[self.defense_base_index]
 
-        # timers 
+        # timers
         self.timers = {
-            TOOL_USE_TIMER : Timer(TIME_FOR_TOOL, self.use_tool),
-            TOOL_SWITCH_TIMER : Timer(TIME_FOR_TOOL_SWITCH),
-
-            DEFENSE_BASE_USE_TIMER : Timer(TIME_FOR_DEFENSE_BASE, self.use_defense_base),
-            DEFENSE_BASE_SWITCH_TIMER : Timer(TIME_FOR_DEFENSE_BASE_SWITCH),
+            TOOL_USE_TIMER: Timer(TIME_FOR_TOOL, self.use_tool),
+            TOOL_SWITCH_TIMER: Timer(TIME_FOR_TOOL_SWITCH),
+            DEFENSE_BASE_USE_TIMER: Timer(TIME_FOR_DEFENSE_BASE, self.use_defense_base),
+            DEFENSE_BASE_SWITCH_TIMER: Timer(TIME_FOR_DEFENSE_BASE_SWITCH),
         }
 
-
     def import_assets(self):
-        self.animations = { ANIM_PLAYER_UP:[], ANIM_PLAYER_DOWN:[], ANIM_PLAYER_LEFT:[], ANIM_PLAYER_RIGHT:[],
-                            ANIM_PLAYER_UP_IDLE:[], ANIM_PLAYER_DOWN_IDLE:[], ANIM_PLAYER_LEFT_IDLE:[], ANIM_PLAYER_RIGHT_IDLE:[],
-                            ANIM_PLAYER_UP_AXE:[], ANIM_PLAYER_DOWN_AXE:[], ANIM_PLAYER_LEFT_AXE:[], ANIM_PLAYER_RIGHT_AXE:[],
-                            ANIM_PLAYER_UP_SWORD:[], ANIM_PLAYER_DOWN_SWORD:[], ANIM_PLAYER_LEFT_SWORD:[], ANIM_PLAYER_RIGHT_SWORD:[]}
+        self.animations = {
+            ANIM_PLAYER_UP: [],
+            ANIM_PLAYER_DOWN: [],
+            ANIM_PLAYER_LEFT: [],
+            ANIM_PLAYER_RIGHT: [],
+            ANIM_PLAYER_UP_IDLE: [],
+            ANIM_PLAYER_DOWN_IDLE: [],
+            ANIM_PLAYER_LEFT_IDLE: [],
+            ANIM_PLAYER_RIGHT_IDLE: [],
+            ANIM_PLAYER_UP_AXE: [],
+            ANIM_PLAYER_DOWN_AXE: [],
+            ANIM_PLAYER_LEFT_AXE: [],
+            ANIM_PLAYER_RIGHT_AXE: [],
+            ANIM_PLAYER_UP_SWORD: [],
+            ANIM_PLAYER_DOWN_SWORD: [],
+            ANIM_PLAYER_LEFT_SWORD: [],
+            ANIM_PLAYER_RIGHT_SWORD: []
+        }
 
         for animation in self.animations.keys():
             full_path = ASSET_PATH_PLAYER + animation
@@ -98,7 +112,9 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_q] and not self.timers[TOOL_SWITCH_TIMER].active:
             self.timers[TOOL_SWITCH_TIMER].activate()
             self.tool_index += 1
-            self.tool_index = self.tool_index if self.tool_index < len(self.tools) else 0
+            self.tool_index = (
+                self.tool_index if self.tool_index < len(self.tools) else 0
+            )
             self.selected_tool = self.tools[self.tool_index]
 
         # use defense base
@@ -112,17 +128,24 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_e] and not self.timers[DEFENSE_BASE_SWITCH_TIMER].active:
             self.timers[DEFENSE_BASE_SWITCH_TIMER].activate()
             self.defense_base_index += 1
-            self.defense_base_index = self.defense_base_index if self.defense_base_index < len(self.defense_bases) else 0
+            self.defense_base_index = (
+                self.defense_base_index
+                if self.defense_base_index < len(self.defense_bases)
+                else 0
+            )
             self.selected_defense_base = self.defense_bases[self.defense_base_index]
 
     def get_status(self):
         # idle
         if self.direction.magnitude() == 0:
-            self.status = self.status.split('_')[0] + '_idle'
+            self.status = self.status.split("_")[0] + "_idle"
 
         # use tool
         if self.timers[TOOL_USE_TIMER].active:
-            self.status = self.status.split('_')[0] + '_' + self.selected_tool
+            self.status = self.status.split("_")[0] + "_" + self.selected_tool
+
+        # use defense base
+        # put the defense bases in place
 
     def move(self, dt):
         # normalizing a vector
@@ -138,10 +161,12 @@ class Player(pygame.sprite.Sprite):
         self.rect.centery = self.pos.y
 
     def use_tool(self):
-        print(self.selected_defense_base)
+        # print(self.selected_defense_base)
+        return
 
     def use_defense_base(self):
-        print(self.selected_tool)
+        #print(self.selected_tool)
+        return
 
     def update_timers(self):
         for timer in self.timers.values():

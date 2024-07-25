@@ -7,7 +7,7 @@ class Game:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption('Tower Defense PyGame')
+        pygame.display.set_caption("Tower Defense PyGame")
         self.clock = pygame.time.Clock()
         self.level = Level()
 
@@ -23,6 +23,6 @@ class Game:
             pygame.display.update()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     game = Game()
     game.run()

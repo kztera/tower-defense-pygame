@@ -1,10 +1,6 @@
-import os
 
-# Lấy đường dẫn tới thư mục chính
-ROOT_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
-
-# asset path
-ASSET_PATH_PLAYER = os.path.join(ROOT_FOLDER_PATH, "../graphics/player/")
+# movement
+MOVEMENT_SPEED_PLAYER = 200
 
 # animation
 ANIM_PLAYER_UP = 'up'
@@ -38,8 +34,8 @@ TIME_FOR_TOOL = 350
 TIME_FOR_TOOL_SWITCH = 200
 
 # defense base
-DEFENSE_BASE_PLAYER_AXE = 'DEFENSE_BASE_1'
-DEFENSE_BASE_PLAYER_SWORD = 'DEFENSE_BASE_2'
+DEFENSE_BASE_PLAYER_AXE = 'defense_base_1'
+DEFENSE_BASE_PLAYER_SWORD = 'defense_base_2'
 
 DEFENSE_BASE_USE_TIMER = 'defense base use'
 DEFENSE_BASE_SWITCH_TIMER = 'defense base switch'
@@ -47,5 +43,4 @@ DEFENSE_BASE_SWITCH_TIMER = 'defense base switch'
 TIME_FOR_DEFENSE_BASE = 350
 TIME_FOR_DEFENSE_BASE_SWITCH = 200
 
-# movement
-MOVEMENT_SPEED_PLAYER = 200
+
