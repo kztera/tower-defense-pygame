@@ -10,11 +10,7 @@ ASSET_PATH_PLAYER = os.path.join(ROOT_FOLDER_PATH, "../graphics/player/")
 ASSET_PATH_OVERLAYS = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/tools/")
 
 # asset path : overlay
-ASSET_PATH_DEFENSE_BASES = os.path.join(ROOT_FOLDER_PATH, "../graphics/defense_bases/")
+ASSET_PATH_DEFENSE_BASES = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/towers/")
 
 # asset path : world
 ASSET_PATH_GROUND = os.path.join(ROOT_FOLDER_PATH, "../graphics/world/ground.png")
-
-
-
-

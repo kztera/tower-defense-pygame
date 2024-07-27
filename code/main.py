@@ -6,7 +6,9 @@ from level import Level
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode(
+            (SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE
+        )
         pygame.display.set_caption("Tower Defense PyGame")
         self.clock = pygame.time.Clock()
         self.level = Level()
