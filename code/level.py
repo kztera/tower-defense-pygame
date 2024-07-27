@@ -24,7 +24,7 @@ class Level:
         self.overlay = Overlay(self.player)
 
     def setup(self):
-        tmx_data = load_pygame("../data/map/map.tmx")
+        tmx_data = load_pygame(ASSET_PATH_MAP)
 
         # Stones
         for obj in tmx_data.get_layer_by_name("Stones"):

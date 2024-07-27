@@ -4,7 +4,7 @@ from support import *
 from timeCounter import Timer
 
 from asset_path import ASSET_PATH_PLAYER
-from player_stats import *
+from game_stats import *
 
 
 class Player(pygame.sprite.Sprite):
@@ -29,21 +29,33 @@ class Player(pygame.sprite.Sprite):
         self.speed = MOVEMENT_SPEED_PLAYER
 
         # tools
-        self.tools = [TOOL_PLAYER_AXE, TOOL_PLAYER_SWORD]
+        self.tools = [TOOL_AXE, TOOL_SWORD]
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
 
-        # defense base
-        self.defense_bases = [DEFENSE_BASE_PLAYER_AXE, DEFENSE_BASE_PLAYER_SWORD]
-        self.defense_base_index = 0
-        self.selected_defense_base = self.defense_bases[self.defense_base_index]
+        # entities
+        self.entities = [
+            ENTITIES_ARROW_TOWER,
+            ENTITIES_BOMB_TOWER,
+            ENTITIES_CANNON_TOWER,
+            ENTITIES_MAGE_TOWER,
+            ENTITIES_MELEE_TOWER,
+            ENTITIES_GOLD_MINE,
+            ENTITIES_GOLD_STASH,
+            ENTITIES_HARVESTER,
+            ENTITIES_SLOW_TRAP,
+            ENTITIES_WALL,
+            ENTITIES_DOOR,
+        ]
+        self.entity_index = 0
+        self.selected_entity = self.entities[self.entity_index]
 
         # timers
         self.timers = {
             TOOL_USE_TIMER: Timer(TIME_FOR_TOOL, self.use_tool),
             TOOL_SWITCH_TIMER: Timer(TIME_FOR_TOOL_SWITCH),
-            DEFENSE_BASE_USE_TIMER: Timer(TIME_FOR_DEFENSE_BASE, self.use_defense_base),
-            DEFENSE_BASE_SWITCH_TIMER: Timer(TIME_FOR_DEFENSE_BASE_SWITCH),
+            ENTITY_USE_TIMER: Timer(TIME_FOR_ENTITY, self.use_entity),
+            ENTITY_SWITCH_TIMER: Timer(TIME_FOR_ENTITY_SWITCH),
         }
 
     def import_assets(self):
@@ -63,7 +75,7 @@ class Player(pygame.sprite.Sprite):
             ANIM_PLAYER_UP_SWORD: [],
             ANIM_PLAYER_DOWN_SWORD: [],
             ANIM_PLAYER_LEFT_SWORD: [],
-            ANIM_PLAYER_RIGHT_SWORD: []
+            ANIM_PLAYER_RIGHT_SWORD: [],
         }
 
         for animation in self.animations.keys():
@@ -125,20 +137,18 @@ class Player(pygame.sprite.Sprite):
         # use defense base
         if keys[pygame.K_LCTRL]:
             # timer for use defense base
-            self.timers[DEFENSE_BASE_USE_TIMER].activate()
+            self.timers[ENTITY_USE_TIMER].activate()
             self.direction = pygame.math.Vector2()
             self.frame_index = 0
 
         # change defense base
-        if keys[pygame.K_e] and not self.timers[DEFENSE_BASE_SWITCH_TIMER].active:
-            self.timers[DEFENSE_BASE_SWITCH_TIMER].activate()
-            self.defense_base_index += 1
-            self.defense_base_index = (
-                self.defense_base_index
-                if self.defense_base_index < len(self.defense_bases)
-                else 0
+        if keys[pygame.K_e] and not self.timers[ENTITY_SWITCH_TIMER].active:
+            self.timers[ENTITY_SWITCH_TIMER].activate()
+            self.entity_index += 1
+            self.entity_index = (
+                self.entity_index if self.entity_index < len(self.entities) else 0
             )
-            self.selected_defense_base = self.defense_bases[self.defense_base_index]
+            self.selected_entity = self.entities[self.entity_index]
 
     def get_status(self):
         # idle
@@ -166,11 +176,11 @@ class Player(pygame.sprite.Sprite):
         self.rect.centery = self.pos.y
 
     def use_tool(self):
-        # print(self.selected_defense_base)
+        # print(self.selected_entity)
         return
 
-    def use_defense_base(self):
-        #print(self.selected_tool)
+    def use_entity(self):
+        # print(self.selected_tool)
         return
 
     def update_timers(self):

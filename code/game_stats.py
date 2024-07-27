@@ -23,8 +23,8 @@ ANIM_PLAYER_LEFT_SWORD = "left_sword"
 ANIM_PLAYER_RIGHT_SWORD = "right_sword"
 
 # tool
-TOOL_PLAYER_AXE = "axe"
-TOOL_PLAYER_SWORD = "sword"
+TOOL_AXE = "axe"
+TOOL_SWORD = "sword"
 
 TOOL_USE_TIMER = "tool use"
 TOOL_SWITCH_TIMER = "tool switch"
@@ -32,12 +32,21 @@ TOOL_SWITCH_TIMER = "tool switch"
 TIME_FOR_TOOL = 350
 TIME_FOR_TOOL_SWITCH = 200
 
-# defense base
-DEFENSE_BASE_PLAYER_AXE = "entities-arrow-tower"
-DEFENSE_BASE_PLAYER_SWORD = "entities-bomb-tower"
+# entities
+ENTITIES_ARROW_TOWER = "entities-arrow-tower"
+ENTITIES_BOMB_TOWER = "entities-bomb-tower"
+ENTITIES_CANNON_TOWER = "entities-cannon-tower"
+ENTITIES_MAGE_TOWER = "entities-mage-tower"
+ENTITIES_MELEE_TOWER = "entities-melee-tower"
+ENTITIES_GOLD_MINE = "entities-gold-mine"
+ENTITIES_GOLD_STASH = "entities-gold-stash"
+ENTITIES_HARVESTER = "entities-harvester"
+ENTITIES_SLOW_TRAP = "entities-slow-trap"
+ENTITIES_WALL = "entities-wall"
+ENTITIES_DOOR = "entities-door"
 
-DEFENSE_BASE_USE_TIMER = "defense base use"
-DEFENSE_BASE_SWITCH_TIMER = "defense base switch"
+ENTITY_USE_TIMER = "entity use"
+ENTITY_SWITCH_TIMER = "entity switch"
 
-TIME_FOR_DEFENSE_BASE = 350
-TIME_FOR_DEFENSE_BASE_SWITCH = 200
+TIME_FOR_ENTITY = 350
+TIME_FOR_ENTITY_SWITCH = 200
