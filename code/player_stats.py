@@ -1,5 +1,5 @@
 # movement
-MOVEMENT_SPEED_PLAYER = 200
+MOVEMENT_SPEED_PLAYER = 500
 
 # animation
 ANIM_PLAYER_UP = "up"
