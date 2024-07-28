@@ -5,8 +5,8 @@ MOVEMENT_SPEED_PLAYER = 500
 PLAYER_STATUS = ""
 
 # tool
-TOOL_AXE = "player-pickaxe-t4"
-TOOL_SPEAR = "player-spear-t2"
+TOOL_AXE = "pickaxe-t2"
+TOOL_SPEAR = "spear-t2"
 
 TOOL_USE_TIMER = "tool use"
 TOOL_SWITCH_TIMER = "tool switch"
