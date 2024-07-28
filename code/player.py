@@ -9,7 +9,7 @@ from sprites import Tool
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, group):
+    def __init__(self, pos, group, collision_sprites):
         super().__init__(group)
 
         # general setup
@@ -22,6 +22,10 @@ class Player(pygame.sprite.Sprite):
         self.pos = pygame.math.Vector2(self.rect.center)
         self.tool_pos = pygame.math.Vector2(self.rect.center)
         self.speed = MOVEMENT_SPEED_PLAYER
+
+        # collision
+        self.hitbox = self.rect.copy().inflate((-20, -20))
+        self.collision_sprites = collision_sprites
 
         # tools
         self.tools = [TOOL_AXE, TOOL_SPEAR]
@@ -127,6 +131,25 @@ class Player(pygame.sprite.Sprite):
             )
             self.selected_entity = self.entities[self.entity_index]
 
+    def collision(self, direction):
+        for sprite in self.collision_sprites:
+            if hasattr(sprite, "hitbox"):
+                if sprite.hitbox.colliderect(self.hitbox):
+                    if direction == "horizontal":
+                        if self.direction.x > 0:
+                            self.hitbox.right = sprite.hitbox.left
+                        if self.direction.x < 0:
+                            self.hitbox.left = sprite.hitbox.right
+                        self.rect.centerx = self.hitbox.centerx
+                        self.pos.x = self.hitbox.centerx
+                    if direction == "vertical":
+                        if self.direction.y > 0:
+                            self.hitbox.bottom = sprite.hitbox.top
+                        if self.direction.y < 0:
+                            self.hitbox.top = sprite.hitbox.bottom
+                        self.rect.centery = self.hitbox.centery
+                        self.pos.y = self.hitbox.centery
+
     def move(self, dt):
         # normalizing a vector
         if self.direction.magnitude() > 0:
@@ -134,11 +157,15 @@ class Player(pygame.sprite.Sprite):
 
         # horizontal movement
         self.pos.x += self.direction.x * self.speed * dt
-        self.rect.centerx = self.pos.x
+        self.hitbox.centerx = round(self.pos.x)
+        self.rect.centerx = self.hitbox.centerx
+        self.collision("horizontal")
 
         # vertical movement
         self.pos.y += self.direction.y * self.speed * dt
-        self.rect.centery = self.pos.y
+        self.hitbox.centery = round(self.pos.y)
+        self.rect.centery = self.hitbox.centery
+        self.collision("vertical")
 
         # tool follow player
         self.tool_pos.x = self.pos.x
