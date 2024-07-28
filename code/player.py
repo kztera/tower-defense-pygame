@@ -1,4 +1,5 @@
 import pygame
+import math
 from settings import *
 from support import *
 from timeCounter import Timer
@@ -26,7 +27,7 @@ class Player(pygame.sprite.Sprite):
         self.tools = [TOOL_AXE, TOOL_SPEAR]
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
-        
+
         self.tool = Tool(
             pos=self.tool_pos,
             surf=pygame.image.load(
@@ -35,7 +36,7 @@ class Player(pygame.sprite.Sprite):
             groups=group,
         )
         self.tool_pos = pygame.math.Vector2()
-        
+
         self.rotation_angle = 0
 
         # entities
@@ -118,7 +119,6 @@ class Player(pygame.sprite.Sprite):
             self.direction = pygame.math.Vector2()
 
         # change entities
-
         if keys[pygame.K_e] and not self.timers[ENTITY_SWITCH_TIMER].active:
             self.timers[ENTITY_SWITCH_TIMER].activate()
             self.entity_index += 1
@@ -126,7 +126,6 @@ class Player(pygame.sprite.Sprite):
                 self.entity_index if self.entity_index < len(self.entities) else 0
             )
             self.selected_entity = self.entities[self.entity_index]
-            change_entity = False
 
     def move(self, dt):
         # normalizing a vector
@@ -146,6 +145,20 @@ class Player(pygame.sprite.Sprite):
         self.tool_pos.y = self.pos.y - 30
         self.tool.rect.center = self.tool_pos.xy
 
+    def rotate(self, rotate_angle):
+        test_image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
+
+        # Get the mouse position
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        # Calculate the angle between the player and the mouse cursor
+        angle = math.atan2(mouse_y - self.pos.y, mouse_x - self.pos.x)
+        angle = math.degrees(angle)
+                
+        # Rotate the image
+        self.image = pygame.transform.rotate(test_image, -angle)
+
+
     def use_tool(self):
         # print(self.selected_entity)
         return
@@ -162,3 +175,4 @@ class Player(pygame.sprite.Sprite):
         self.input()
         self.update_timers()
         self.move(dt)
+        self.rotate(30)
