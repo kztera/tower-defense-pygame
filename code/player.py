@@ -93,6 +93,7 @@ class Player(pygame.sprite.Sprite):
     def input(self):
         # keybroad button input
         keys = pygame.key.get_pressed()
+        events = pygame.event.get()
 
         if not self.timers[TOOL_USE_TIMER].active:
             # direction
@@ -114,10 +115,6 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.direction.x = 0
 
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEWHEEL:
-                print("change tool")
-
         # use tool
         if keys[pygame.K_SPACE]:
             # timer for use tool
@@ -134,21 +131,27 @@ class Player(pygame.sprite.Sprite):
             )
             self.selected_tool = self.tools[self.tool_index]
 
-        # use defense base
+        # use entities
         if keys[pygame.K_LCTRL]:
             # timer for use defense base
             self.timers[ENTITY_USE_TIMER].activate()
             self.direction = pygame.math.Vector2()
             self.frame_index = 0
 
-        # change defense base
-        if keys[pygame.K_e] and not self.timers[ENTITY_SWITCH_TIMER].active:
+        # change entities
+        change_entity = False
+        for event in events:
+            if event.type == pygame.MOUSEWHEEL:
+                change_entity = True
+
+        if (keys[pygame.K_e] or change_entity) and not self.timers[ENTITY_SWITCH_TIMER].active:
             self.timers[ENTITY_SWITCH_TIMER].activate()
             self.entity_index += 1
             self.entity_index = (
                 self.entity_index if self.entity_index < len(self.entities) else 0
             )
             self.selected_entity = self.entities[self.entity_index]
+            change_entity = False
 
     def get_status(self):
         # idle

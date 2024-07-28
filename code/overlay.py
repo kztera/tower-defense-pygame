@@ -23,8 +23,6 @@ class Overlay:
             for entity in player.entities
         }
 
-        print(self.entities_surf)
-
     def display(self):
         # tool
 
@@ -65,13 +63,23 @@ class Overlay:
             entity_rect.centerx -= first_position
             entity_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
 
-
+            # Tạo bề mặt outline
             outline = pygame.Surface((60, 60))
-            outline.fill("pink")
+            outline.fill("#4F4F4F")
             outline_rect = outline.get_rect(center=OVERLAY_POSITIONS[OVERLAY_ENTITY])
             outline_rect.centerx -= first_position
             outline_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
 
+            matte = pygame.Surface((60, 60))
+            outline.fill("#B5B5B5")
+            matte.set_alpha(128)
+            matte_rect = outline.get_rect(center=OVERLAY_POSITIONS[OVERLAY_ENTITY])
+            matte_rect.centerx -= first_position
+            matte_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
+
             self.display_surface.blit(outline, outline_rect)
             self.display_surface.blit(entity_surf, entity_rect)
+
+            if entity != self.player.selected_entity:
+                self.display_surface.blit(matte, matte_rect)
             i += 1
