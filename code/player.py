@@ -27,13 +27,14 @@ class Player(pygame.sprite.Sprite):
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
         
+        # create player tool image 
         self.tool = Tool(
             pos=self.pos,
             surf=pygame.image.load(ASSET_PATH_PLAYER_TOOLS + self.selected_tool + ".png"),
             groups=group
         )
         self.tool_pos = pygame.math.Vector2()
-        
+
         self.rotation_angle = 0
 
         # entities
