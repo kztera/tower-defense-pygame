@@ -29,7 +29,7 @@ def process_directory(directory_path, scale_factor):
 
 
 input_directory = "../graphics/ui/tools"
-scale = 0.75
+scale = 0.25
 
 
 process_directory(input_directory, scale)

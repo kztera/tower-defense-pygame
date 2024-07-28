@@ -53,9 +53,15 @@ def process_directory(input_dir, output_dir, max_size=None, keep_aspect_ratio=Tr
             if file.lower().endswith(".svg"):
                 input_path = os.path.join(root, file)
                 relative_path = os.path.relpath(input_path, input_dir)
-                output_path = os.path.join(
-                    output_dir, os.path.splitext(relative_path)[0] + ".png"
-                )
+                # xóa bỏ tên inventory- trong tên file ở đầu
+                file = file.replace("inventory-", "")
+                file = file.split(".")[0]
+                new_path = os.path.join(root, file) + ".png"
+                output_path = os.path.join(output_dir, new_path)
+
+                # output_path = os.path.join(
+                #     output_dir, os.path.splitext(relative_path)[0] + ".png"
+                # )
 
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
@@ -69,9 +75,9 @@ def process_directory(input_dir, output_dir, max_size=None, keep_aspect_ratio=Tr
 
 
 # Sử dụng script
-input_directory = "../graphics/map"
-output_directory = "../png"
-max_size = 256  # Hoặc đặt theo ý muốn
+input_directory = "../graphics/ui/tools"
+output_directory = ""
+max_size = 128  # Hoặc đặt theo ý muốn
 keep_aspect_ratio = True  # Đặt là False nếu muốn sử dụng kích thước gốc của SVG
 
 process_directory(input_directory, output_directory, max_size, keep_aspect_ratio)

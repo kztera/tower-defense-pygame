@@ -6,17 +6,15 @@ from asset_path import ASSET_PATH_UI_TOOLS, ASSET_PATH_UI_ENTITIES
 
 class Overlay:
     def __init__(self, player):
-        # general setup
+        # General setup
         self.display_surface = pygame.display.get_surface()
         self.player = player
 
-        # import asset : tool
         self.tools_surf = {
             tool: pygame.image.load(ASSET_PATH_UI_TOOLS + f"{tool}.png").convert_alpha()
             for tool in player.tools
         }
 
-        # import asset : entities
         self.entities_surf = {
             entity: pygame.image.load(
                 ASSET_PATH_UI_ENTITIES + f"{entity}.png"
@@ -25,92 +23,77 @@ class Overlay:
         }
 
     def display(self):
+        self.display_surface = pygame.display.get_surface()
+        current_width, current_height = self.display_surface.get_size()
 
-        # tool
-        total = len(self.player.tools)
+        overlay_positions = {
+            OVERLAY_TOOL: (current_width / 2, current_height - 150),
+            OVERLAY_ENTITY: (current_width / 2, current_height - 70),
+        }
+
+        self._display_items(
+            self.player.tools,
+            self.tools_surf,
+            self.player.selected_tool,
+            overlay_positions[OVERLAY_TOOL],
+            OVERLAY_TOOL_DISTANCE,
+        )
+        self._display_items(
+            self.player.entities,
+            self.entities_surf,
+            self.player.selected_entity,
+            overlay_positions[OVERLAY_ENTITY],
+            OVERLAY_ENTITY_DISTANCE,
+            True,
+        )
+
+    def _display_items(
+        self, items, surfaces, selected_item, position, distance, show_numbers=False
+    ):
+        total = len(items)
         count = int(total / 2)
         first_position = 0
         if total % 2 == 0:
-            first_position += (
-                count - 1
-            ) * OVERLAY_TOOL_DISTANCE + OVERLAY_TOOL_DISTANCE / 2
+            first_position += (count - 1) * distance + distance / 2
         else:
-            first_position += count * OVERLAY_TOOL_DISTANCE
+            first_position += count * distance
 
-        i = 0
-        for tool in self.player.tools:
-            tool_surf = self.tools_surf[tool]
-            tool_rect = tool_surf.get_rect(center=OVERLAY_POSITIONS[OVERLAY_TOOL])
-            tool_rect.centerx -= first_position
-            tool_rect.centerx += OVERLAY_TOOL_DISTANCE * i
+        font = pygame.font.Font(None, 12) if show_numbers else None
+        number_offset = 5
 
-            # Tạo bề mặt outline
-            outline = pygame.Surface((90, 90))
-            outline.fill("#4F4F4F")
-            outline_rect = outline.get_rect(center=OVERLAY_POSITIONS[OVERLAY_TOOL])
-            outline_rect.centerx -= first_position
-            outline_rect.centerx += OVERLAY_TOOL_DISTANCE * i
-
-            matte = pygame.Surface((90, 90))
-            outline.fill("#B5B5B5")
-            matte.set_alpha(128)
-            matte_rect = outline.get_rect(center=OVERLAY_POSITIONS[OVERLAY_TOOL])
-            matte_rect.centerx -= first_position
-            matte_rect.centerx += OVERLAY_TOOL_DISTANCE * i
-
-            self.display_surface.blit(outline, outline_rect)
-            self.display_surface.blit(tool_surf, tool_rect)
-
-            if tool != self.player.selected_tool:
-                self.display_surface.blit(matte, matte_rect)
-            i += 1
-
-        # entities
-        total = len(self.player.entities)
-        count = int(total / 2)
-        first_position = 0
-        if total % 2 == 0:
-            first_position += (
-                count - 1
-            ) * OVERLAY_ENTITY_DISTANCE + OVERLAY_ENTITY_DISTANCE
-        else:
-            first_position += count * OVERLAY_ENTITY_DISTANCE
-
-        i = 0
-        font = pygame.font.Font(None, 12)
-
-        for entity in self.player.entities:
-            entity_surf = self.entities_surf[entity]
-            entity_rect = entity_surf.get_rect(center=OVERLAY_POSITIONS[OVERLAY_ENTITY])
-            entity_rect.centerx -= first_position
-            entity_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
+        for i, item in enumerate(items):
+            item_surf = surfaces[item]
+            item_rect = item_surf.get_rect(center=position)
+            item_rect.centerx -= first_position
+            item_rect.centerx += distance * i
 
             outline = pygame.Surface((62, 62), pygame.SRCALPHA)
             pygame.draw.rect(
                 outline, (79, 79, 79, 128), outline.get_rect(), border_radius=3
             )
-            outline_rect = outline.get_rect(center=OVERLAY_POSITIONS[OVERLAY_ENTITY])
+            outline_rect = outline.get_rect(center=position)
             outline_rect.centerx -= first_position
-            outline_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
-
-            number_text = font.render(str(i + 1), True, (255, 255, 255))
-            number_offset = 5
+            outline_rect.centerx += distance * i
 
             self.display_surface.blit(outline, outline_rect)
-            self.display_surface.blit(entity_surf, entity_rect)
-            self.display_surface.blit(
-                number_text,
-                (outline_rect.left + number_offset, outline_rect.top + number_offset),
-            )
+            self.display_surface.blit(item_surf, item_rect)
 
-            if entity != self.player.selected_entity:
+            if show_numbers:
+                number_text = font.render(str(i + 1), True, (255, 255, 255))
+                self.display_surface.blit(
+                    number_text,
+                    (
+                        outline_rect.left + number_offset,
+                        outline_rect.top + number_offset,
+                    ),
+                )
+
+            if item != selected_item:
                 matte = pygame.Surface((62, 62), pygame.SRCALPHA)
                 pygame.draw.rect(
                     matte, (181, 181, 181, 64), matte.get_rect(), border_radius=3
                 )
-                matte_rect = matte.get_rect(center=OVERLAY_POSITIONS[OVERLAY_ENTITY])
+                matte_rect = matte.get_rect(center=position)
                 matte_rect.centerx -= first_position
-                matte_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
+                matte_rect.centerx += distance * i
                 self.display_surface.blit(matte, matte_rect)
-
-            i += 1
