@@ -28,7 +28,7 @@ def process_directory(directory_path, scale_factor):
                     print(f"Error processing {file_path}: {str(e)}")
 
 
-input_directory = "../graphics/ui/entities"
+input_directory = "../graphics/ui/tools"
 scale = 0.75
 
 

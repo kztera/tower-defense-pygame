@@ -27,11 +27,11 @@ class Level:
         tmx_data = load_pygame(ASSET_PATH_MAP)
 
         # Stones
-        for obj in tmx_data.get_layer_by_name("Stones"):
+        for obj in tmx_data.get_layer_by_name(LAYER_STONE):
             Stone(pos=(obj.x, obj.y), surf=obj.image, groups=self.all_sprites)
 
         # Trees
-        for obj in tmx_data.get_layer_by_name("Trees"):
+        for obj in tmx_data.get_layer_by_name(LAYER_TREE):
             Tree(pos=(obj.x, obj.y), surf=obj.image, groups=self.all_sprites)
 
         # create player
@@ -60,8 +60,8 @@ class CameraGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
     def custom_draw(self, player):
-        self.offset.x = player.rect.centerx - SCREEN_WIDTH / 2
-        self.offset.y = player.rect.centery - SCREEN_HEIGHT / 2
+        self.offset.x = player.rect.centerx - SCREEN_WIDTH_DEFAULT / 2
+        self.offset.y = player.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
 
         for layer in LAYERS.values():
             for sprite in sorted(
