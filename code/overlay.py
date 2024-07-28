@@ -76,29 +76,40 @@ class Overlay:
             first_position += count * OVERLAY_ENTITY_DISTANCE
 
         i = 0
+        font = pygame.font.Font(None, 12)
+
         for entity in self.player.entities:
             entity_surf = self.entities_surf[entity]
             entity_rect = entity_surf.get_rect(center=OVERLAY_POSITIONS[OVERLAY_ENTITY])
             entity_rect.centerx -= first_position
             entity_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
 
-            # Tạo bề mặt outline
-            outline = pygame.Surface((60, 60))
-            outline.fill("#4F4F4F")
+            outline = pygame.Surface((62, 62), pygame.SRCALPHA)
+            pygame.draw.rect(
+                outline, (79, 79, 79, 128), outline.get_rect(), border_radius=3
+            )
             outline_rect = outline.get_rect(center=OVERLAY_POSITIONS[OVERLAY_ENTITY])
             outline_rect.centerx -= first_position
             outline_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
 
-            matte = pygame.Surface((60, 60))
-            outline.fill("#B5B5B5")
-            matte.set_alpha(128)
-            matte_rect = outline.get_rect(center=OVERLAY_POSITIONS[OVERLAY_ENTITY])
-            matte_rect.centerx -= first_position
-            matte_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
+            number_text = font.render(str(i + 1), True, (255, 255, 255))
+            number_offset = 5
 
             self.display_surface.blit(outline, outline_rect)
             self.display_surface.blit(entity_surf, entity_rect)
+            self.display_surface.blit(
+                number_text,
+                (outline_rect.left + number_offset, outline_rect.top + number_offset),
+            )
 
             if entity != self.player.selected_entity:
+                matte = pygame.Surface((62, 62), pygame.SRCALPHA)
+                pygame.draw.rect(
+                    matte, (181, 181, 181, 64), matte.get_rect(), border_radius=3
+                )
+                matte_rect = matte.get_rect(center=OVERLAY_POSITIONS[OVERLAY_ENTITY])
+                matte_rect.centerx -= first_position
+                matte_rect.centerx += OVERLAY_ENTITY_DISTANCE * i
                 self.display_surface.blit(matte, matte_rect)
+
             i += 1
