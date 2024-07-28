@@ -4,7 +4,7 @@ import os
 ROOT_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # asset path : player
-ASSET_PATH_PLAYER = os.path.join(ROOT_FOLDER_PATH, "../graphics/player/")
+ASSET_PATH_PLAYER = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/body/player-base.png")
 
 # asset path : overlay
 ASSET_PATH_UI_TOOLS = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/tools/")
