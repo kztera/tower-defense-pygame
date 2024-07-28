@@ -37,7 +37,7 @@ class Player(pygame.sprite.Sprite):
             surf=pygame.image.load(
                 ASSET_PATH_PLAYER_TOOLS + self.selected_tool + ".png"
             ).convert_alpha(),
-            groups=group,
+            groups=group
         )
         self.tool_pos = pygame.math.Vector2()
 
@@ -172,8 +172,9 @@ class Player(pygame.sprite.Sprite):
         self.tool_pos.y = self.pos.y - 30
         self.tool.rect.center = self.tool_pos.xy
 
-    def rotate(self, rotate_angle):
-        test_image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
+        '''
+        def rotate(self, rotate_angle):
+               test_image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
 
         # Get the mouse position
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -183,7 +184,17 @@ class Player(pygame.sprite.Sprite):
         angle = math.degrees(angle)
                 
         # Rotate the image
-        self.image = pygame.transform.rotate(test_image, -angle)
+        self.image = pygame.transform.rotate(test_image, -angle)'''
+
+    def rotate(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        test_image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
+        angle = math.atan2(mouse_y - self.rect.centery, mouse_x - self.rect.centerx)
+        angle = math.degrees(angle)
+
+        self.image = pygame.transform.rotozoom(test_image, -angle, 1)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
 
 
     def use_tool(self):
@@ -202,4 +213,4 @@ class Player(pygame.sprite.Sprite):
         self.input()
         self.update_timers()
         self.move(dt)
-        self.rotate(30)
+        self.rotate()
