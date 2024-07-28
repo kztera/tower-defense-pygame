@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="250" height="250" tilewidth="48" tileheight="48" infinite="0" nextlayerid="7" nextobjectid="143">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="250" height="250" tilewidth="48" tileheight="48" infinite="0" nextlayerid="9" nextobjectid="161">
  <tileset firstgid="1" source="../tilesets/map-grass.tsx"/>
  <tileset firstgid="2" source="../tilesets/map-stone.tsx"/>
  <tileset firstgid="3" source="../tilesets/map-tree.tsx"/>
+ <tileset firstgid="4" source="../../../../Downloads/PyDew-Valley-main/s23 - Audio &amp; fixes/data/Tilesets/Grass.tsx"/>
  <layer id="1" name="Ground" width="250" height="250">
   <data encoding="csv">
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -268,7 +269,7 @@
   <object id="67" name="Stone" gid="2" x="11256" y="10616" width="144" height="144"/>
   <object id="68" name="Stone" gid="2" x="8680" y="11528" width="144" height="144"/>
   <object id="69" name="Stone" gid="2" x="9432" y="8184" width="144" height="144"/>
-  <object id="70" name="Stone" gid="2" x="9493.5" y="8261.5" width="144" height="144"/>
+  <object id="70" name="Stone" gid="2" x="9502.83" y="8266.83" width="144" height="144"/>
   <object id="71" name="Stone" gid="2" x="7336" y="10056" width="144" height="144"/>
   <object id="72" name="Stone" gid="2" x="10248" y="3248" width="144" height="144"/>
   <object id="73" name="Stone" gid="2" x="7256" y="1816" width="144" height="144"/>
@@ -293,6 +294,19 @@
   <object id="94" name="Stone" gid="2" x="10114" y="9180" width="144" height="144"/>
   <object id="123" name="Stone" gid="2" x="8968" y="2440" width="144" height="144"/>
   <object id="124" name="Stone" gid="2" x="9045.5" y="2486" width="144" height="144"/>
+  <object id="151" name="Stone" gid="2" x="11472" y="3360" width="144" height="144"/>
+  <object id="152" name="Stone" gid="2" x="480" y="9120" width="144" height="144"/>
+  <object id="153" name="Stone" gid="2" x="1632" y="9888" width="144" height="144"/>
+  <object id="154" name="Stone" gid="2" x="2640" y="3888" width="144" height="144"/>
+  <object id="155" name="Stone" gid="2" x="3168" y="3024" width="144" height="144"/>
+  <object id="156" name="Stone" gid="2" x="5432" y="8168" width="144" height="144"/>
+  <object id="157" name="Stone" gid="2" x="11436" y="11940" width="144" height="144"/>
+  <object id="158" name="Stone" gid="2" x="11492" y="11940" width="144" height="144"/>
+ </objectgroup>
+ <objectgroup id="7" name="Player">
+  <object id="160" name="Start" x="7200" y="5280">
+   <point/>
+  </object>
  </objectgroup>
  <objectgroup id="2" name="Trees">
   <object id="95" name="Tree" gid="3" x="6657.33" y="352" width="192" height="192"/>
@@ -305,12 +319,12 @@
   <object id="103" name="Tree" gid="3" x="2352" y="11952" width="192" height="192"/>
   <object id="104" name="Tree" gid="3" x="5136" y="11856" width="192" height="192"/>
   <object id="105" name="Tree" gid="3" x="9600" y="10560" width="192" height="192"/>
-  <object id="106" name="Tree" gid="3" x="9504" y="8202" width="192" height="192"/>
+  <object id="106" name="Tree" gid="3" x="9536" y="8188.67" width="192" height="192"/>
   <object id="107" name="Tree" gid="3" x="10042.7" y="2013.33" width="192" height="192"/>
   <object id="108" name="Tree" gid="3" x="7152" y="3792" width="192" height="192"/>
   <object id="109" name="Tree" gid="3" x="1680" y="240" width="192" height="192"/>
   <object id="110" name="Tree" gid="3" x="2462" y="1350" width="192" height="192"/>
-  <object id="111" name="Tree" gid="3" x="4685.82" y="3486.91" width="192" height="192"/>
+  <object id="111" name="Tree" gid="3" x="4690.82" y="3473.91" width="192" height="192"/>
   <object id="112" name="Tree" gid="3" x="1800" y="2504" width="192" height="192"/>
   <object id="113" name="Tree" gid="3" x="1248" y="4652" width="192" height="192"/>
   <object id="114" name="Tree" gid="3" x="2304" y="9216" width="192" height="192"/>
@@ -319,18 +333,26 @@
   <object id="117" name="Tree" gid="3" x="11456" y="1120" width="192" height="192"/>
   <object id="118" name="Tree" gid="3" x="4992" y="400" width="192" height="192"/>
   <object id="119" name="Tree" gid="3" x="6112" y="10704" width="192" height="192"/>
-  <object id="120" name="Tree" gid="3" x="11632" y="8272" width="192" height="192"/>
+  <object id="120" name="Tree" gid="3" x="11594.7" y="8318.67" width="192" height="192"/>
   <object id="121" name="Tree" gid="3" x="11136" y="4672" width="192" height="192"/>
   <object id="122" name="Tree" gid="3" x="192" y="7792" width="192" height="192"/>
   <object id="128" name="Tree" gid="3" x="4164" y="4832" width="192" height="192"/>
-  <object id="129" name="Tree" gid="3" x="5746" y="5262" width="192" height="192"/>
+  <object id="129" name="Tree" gid="3" x="5760" y="5138" width="192" height="192"/>
   <object id="130" name="Tree" gid="3" x="1896" y="6260" width="192" height="192"/>
   <object id="136" name="Tree" gid="3" x="8777" y="7455" width="192" height="192"/>
   <object id="137" name="Tree" gid="3" x="8861" y="7513" width="192" height="192"/>
   <object id="138" name="Tree" gid="3" x="11667" y="4989" width="192" height="192"/>
   <object id="139" name="Tree" gid="3" x="11647" y="8211" width="192" height="192"/>
-  <object id="140" name="Tree" gid="3" x="5591.88" y="2335.39" width="192" height="192"/>
+  <object id="140" name="Tree" gid="3" x="5564.88" y="2312.39" width="192" height="192"/>
   <object id="141" name="Tree" gid="3" x="5646.42" y="2232.36" width="192" height="192"/>
   <object id="142" name="Tree" gid="3" x="5700.97" y="2329.33" width="192" height="192"/>
+  <object id="143" name="Tree" gid="3" x="7296" y="6672" width="192" height="192"/>
+  <object id="144" name="Tree" gid="3" x="8352" y="5280" width="192" height="192"/>
+  <object id="145" name="Tree" gid="3" x="3648" y="5904" width="192" height="192"/>
+  <object id="146" name="Tree" gid="3" x="3254" y="3086" width="192" height="192"/>
+  <object id="147" name="Tree" gid="3" x="9024" y="3408" width="192" height="192"/>
+  <object id="148" name="Tree" gid="3" x="10320" y="3312" width="192" height="192"/>
+  <object id="149" name="Tree" gid="3" x="7409.33" y="10084" width="192" height="192"/>
+  <object id="150" name="Tree" gid="3" x="5998.67" y="10769.3" width="192" height="192"/>
  </objectgroup>
 </map>

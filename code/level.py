@@ -16,6 +16,7 @@ class Level:
 
         # sprites group
         self.all_sprites = CameraGroup()
+        self.collision_sprites = pygame.sprite.Group()
 
         # setup
         self.setup()
@@ -28,14 +29,26 @@ class Level:
 
         # Stones
         for obj in tmx_data.get_layer_by_name(LAYER_STONE):
-            Stone(pos=(obj.x, obj.y), surf=obj.image, groups=self.all_sprites)
+            Stone(
+                pos=(obj.x, obj.y),
+                surf=obj.image,
+                groups=[self.all_sprites, self.collision_sprites],
+            )
 
         # Trees
         for obj in tmx_data.get_layer_by_name(LAYER_TREE):
-            Tree(pos=(obj.x, obj.y), surf=obj.image, groups=self.all_sprites)
+            Tree(
+                pos=(obj.x, obj.y),
+                surf=obj.image,
+                groups=[self.all_sprites, self.collision_sprites],
+            )
 
         # create player
-        self.player = Player((640, 360), self.all_sprites)
+        for obj in tmx_data.get_layer_by_name("Player"):
+            if obj.name == "Start":
+                self.player = Player(
+                    (obj.x, obj.y), self.all_sprites, self.collision_sprites
+                )
 
         # create ground
         Generic(
