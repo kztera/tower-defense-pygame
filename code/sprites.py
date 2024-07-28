@@ -11,13 +11,13 @@ class Generic(pygame.sprite.Sprite):
 
 
 class Stone(Generic):
-    def __init__(self, pos, surf, groups):
-        super().__init__(pos, surf, groups)
+    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_STONE]):
+        super().__init__(pos, surf, groups, z)
 
 
 class Tree(Generic):
-    def __init__(self, pos, surf, groups):
-        super().__init__(pos, surf, groups)
+    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_TREE]):
+        super().__init__(pos, surf, groups, z)
 
 
 class Tool(pygame.sprite.Sprite):
