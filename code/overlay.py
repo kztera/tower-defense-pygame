@@ -25,6 +25,7 @@ class Overlay:
         }
 
     def display(self):
+
         # tool
         total = len(self.player.tools)
         count = int(total / 2)

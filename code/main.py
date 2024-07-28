@@ -21,8 +21,8 @@ class Game:
                     sys.exit()
                 elif event.type == pygame.VIDEORESIZE:
                     # Update the window size when the player resizes it
-                    window_width, window_height = event.size
-                    self.screen = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
+                    # window_width, window_height = event.size
+                    # self.screen = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
                     print("event.size")
 
             dt = self.clock.tick() / 1000

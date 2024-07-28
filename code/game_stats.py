@@ -1,30 +1,12 @@
 # movement
 MOVEMENT_SPEED_PLAYER = 500
 
-# animation
-ANIM_PLAYER_UP = "up"
-ANIM_PLAYER_DOWN = "down"
-ANIM_PLAYER_LEFT = "left"
-ANIM_PLAYER_RIGHT = "right"
-
-ANIM_PLAYER_UP_IDLE = "up_idle"
-ANIM_PLAYER_DOWN_IDLE = "down_idle"
-ANIM_PLAYER_LEFT_IDLE = "left_idle"
-ANIM_PLAYER_RIGHT_IDLE = "right_idle"
-
-ANIM_PLAYER_UP_AXE = "up_axe"
-ANIM_PLAYER_DOWN_AXE = "down_axe"
-ANIM_PLAYER_LEFT_AXE = "left_axe"
-ANIM_PLAYER_RIGHT_AXE = "right_axe"
-
-ANIM_PLAYER_UP_SWORD = "up_sword"
-ANIM_PLAYER_DOWN_SWORD = "down_sword"
-ANIM_PLAYER_LEFT_SWORD = "left_sword"
-ANIM_PLAYER_RIGHT_SWORD = "right_sword"
+#
+PLAYER_STATUS = ""
 
 # tool
-TOOL_AXE = "axe"
-TOOL_SWORD = "sword"
+TOOL_AXE = "player-pickaxe-t4"
+TOOL_SPEAR = "player-spear-t2"
 
 TOOL_USE_TIMER = "tool use"
 TOOL_SWITCH_TIMER = "tool switch"

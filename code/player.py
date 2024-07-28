@@ -11,15 +11,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos, group):
         super().__init__(group)
 
-        # import asset
-        self.import_assets()
-
-        # begin status
-        self.status = ANIM_PLAYER_DOWN_IDLE
-        self.frame_index = 0
-
         # general setup
-        self.image = self.animations[self.status][self.frame_index]
+        self.image = pygame.image.load(ASSET_PATH_PLAYER)
         self.rect = self.image.get_rect(center=pos)
         self.z = LAYERS[LAYER_MAIN]
 
@@ -29,7 +22,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = MOVEMENT_SPEED_PLAYER
 
         # tools
-        self.tools = [TOOL_AXE, TOOL_SWORD]
+        self.tools = [TOOL_AXE, TOOL_SPEAR]
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
 
@@ -58,38 +51,6 @@ class Player(pygame.sprite.Sprite):
             ENTITY_SWITCH_TIMER: Timer(TIME_FOR_ENTITY_SWITCH),
         }
 
-    def import_assets(self):
-        self.animations = {
-            ANIM_PLAYER_UP: [],
-            ANIM_PLAYER_DOWN: [],
-            ANIM_PLAYER_LEFT: [],
-            ANIM_PLAYER_RIGHT: [],
-            ANIM_PLAYER_UP_IDLE: [],
-            ANIM_PLAYER_DOWN_IDLE: [],
-            ANIM_PLAYER_LEFT_IDLE: [],
-            ANIM_PLAYER_RIGHT_IDLE: [],
-            ANIM_PLAYER_UP_AXE: [],
-            ANIM_PLAYER_DOWN_AXE: [],
-            ANIM_PLAYER_LEFT_AXE: [],
-            ANIM_PLAYER_RIGHT_AXE: [],
-            ANIM_PLAYER_UP_SWORD: [],
-            ANIM_PLAYER_DOWN_SWORD: [],
-            ANIM_PLAYER_LEFT_SWORD: [],
-            ANIM_PLAYER_RIGHT_SWORD: [],
-        }
-
-        for animation in self.animations.keys():
-            full_path = ASSET_PATH_PLAYER + animation
-            self.animations[animation] = import_folder(full_path)
-
-    def animate(self, dt):
-        self.frame_index += 4 * dt
-
-        if self.frame_index >= len(self.animations[self.status]):
-            self.frame_index = 0
-
-        self.image = self.animations[self.status][int(self.frame_index)]
-
     def input(self):
         # keybroad button input
         keys = pygame.key.get_pressed()
@@ -99,19 +60,15 @@ class Player(pygame.sprite.Sprite):
             # direction
             if keys[pygame.K_UP] or keys[pygame.K_w]:
                 self.direction.y = -1
-                self.status = ANIM_PLAYER_UP
             elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
                 self.direction.y = 1
-                self.status = ANIM_PLAYER_DOWN
             else:
                 self.direction.y = 0
 
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 self.direction.x = 1
-                self.status = ANIM_PLAYER_RIGHT
             elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 self.direction.x = -1
-                self.status = ANIM_PLAYER_LEFT
             else:
                 self.direction.x = 0
 
@@ -144,7 +101,9 @@ class Player(pygame.sprite.Sprite):
             if event.type == pygame.MOUSEWHEEL:
                 change_entity = True
 
-        if (keys[pygame.K_e] or change_entity) and not self.timers[ENTITY_SWITCH_TIMER].active:
+        if (keys[pygame.K_e] or change_entity) and not self.timers[
+            ENTITY_SWITCH_TIMER
+        ].active:
             self.timers[ENTITY_SWITCH_TIMER].activate()
             self.entity_index += 1
             self.entity_index = (
@@ -152,18 +111,6 @@ class Player(pygame.sprite.Sprite):
             )
             self.selected_entity = self.entities[self.entity_index]
             change_entity = False
-
-    def get_status(self):
-        # idle
-        if self.direction.magnitude() == 0:
-            self.status = self.status.split("_")[0] + "_idle"
-
-        # use tool
-        if self.timers[TOOL_USE_TIMER].active:
-            self.status = self.status.split("_")[0] + "_" + self.selected_tool
-
-        # use defense base
-        # put the defense bases in place
 
     def move(self, dt):
         # normalizing a vector
@@ -192,8 +139,6 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, dt):
         self.input()
-        self.get_status()
         self.update_timers()
 
         self.move(dt)
-        self.animate(dt)
