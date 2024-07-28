@@ -3,10 +3,13 @@ import os
 # Lấy đường dẫn tới thư mục chính
 ROOT_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
 
-# asset path : player
+# asset path : player body
 ASSET_PATH_PLAYER = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/body/player-base.png")
 
-# asset path : overlay
+# asset path : player tool
+ASSET_PATH_PLAYER_TOOLS = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/tools/player-")
+
+# asset path : ui tool
 ASSET_PATH_UI_TOOLS = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/tools/")
 
 # asset path : overlay

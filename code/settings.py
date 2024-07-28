@@ -26,13 +26,15 @@ PLAYER_TOOL_OFFSET = {
 }
 
 LAYER_GROUND = "Ground"
+LAYER_TOOL = "Tool"
 LAYER_MAIN = "Main"
 LAYER_STONE = "Stones"
 LAYER_TREE = "Trees"
 
 LAYERS = {
     LAYER_GROUND: 0,
-    LAYER_MAIN: 1,
-    LAYER_STONE: 2,
-    LAYER_TREE: 3,
+    LAYER_TOOL: 1,
+    LAYER_MAIN: 2,
+    LAYER_STONE: 3,
+    LAYER_TREE: 4,
 }
