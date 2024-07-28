@@ -40,9 +40,10 @@ class Player(pygame.sprite.Sprite):
             groups=group
         )
         self.tool_pos = pygame.math.Vector2()
-
-        self.rotation_angle = 0
-
+        self.using_tool = False
+        self.angle = 0
+        self.swing = False
+        
         # entities
         self.entities = [
             ENTITIES_ARROW_TOWER,
@@ -90,14 +91,16 @@ class Player(pygame.sprite.Sprite):
                 self.direction.x = 0
 
         # use tool
-        using_tool = False
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    using_tool = True
+                    self.using_tool = True
+                    self.angle = 0
+                    self.swing = True
                     # timer for use tool
                     self.timers[TOOL_USE_TIMER].activate()
                     self.direction = pygame.math.Vector2()
+                    print("attack")
 
         # change tool
         changing_tool = False
@@ -172,30 +175,31 @@ class Player(pygame.sprite.Sprite):
         self.tool_pos.y = self.pos.y - 30
         self.tool.rect.center = self.tool_pos.xy
 
-        '''
-        def rotate(self, rotate_angle):
-               test_image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
-
-        # Get the mouse position
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-
-        # Calculate the angle between the player and the mouse cursor
-        angle = math.atan2(mouse_y - self.pos.y, mouse_x - self.pos.x)
-        angle = math.degrees(angle)
-                
-        # Rotate the image
-        self.image = pygame.transform.rotate(test_image, -angle)'''
-
     def rotate(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        test_image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
+
+        player_image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
         angle = math.atan2(mouse_y - self.rect.centery, mouse_x - self.rect.centerx)
         angle = math.degrees(angle)
-
-        self.image = pygame.transform.rotozoom(test_image, -angle, 1)
+        self.image = pygame.transform.rotozoom(player_image, -angle, 1)
         self.rect = self.image.get_rect(center=self.rect.center)
 
+        tool_image = pygame.image.load(
+                ASSET_PATH_PLAYER_TOOLS + self.selected_tool + ".png"
+            ).convert_alpha()
 
+        if self.using_tool:
+            if self.swing:
+                self.angle += 10
+                if self.angle >= 180:
+                    self.swing = False
+            else:
+                self.angle -= 10
+                if self.angle <= 0:
+                    self.angle = 0
+                    self.using_tool = False
+            self.tool.image = pygame.transform.rotozoom(tool_image, self.angle, 1)
+            self.tool.rect = self.tool.image.get_rect(center=self.tool.rect.center)
 
     def use_tool(self):
         # print(self.selected_entity)
