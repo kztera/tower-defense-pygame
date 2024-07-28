@@ -28,8 +28,8 @@ LAYER_TREE = "Trees"
 
 LAYERS = {
     LAYER_GROUND: 0,
-    LAYER_TOOL: 1,
-    LAYER_MAIN: 2,
-    LAYER_STONE: 3,
-    LAYER_TREE: 4,
+    LAYER_STONE: 1,
+    LAYER_TREE: 2,
+    LAYER_TOOL: 3,
+    LAYER_MAIN: 4,
 }

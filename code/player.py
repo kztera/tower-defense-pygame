@@ -2,7 +2,6 @@ import pygame
 from settings import *
 from support import *
 from timeCounter import Timer
-
 from asset_path import *
 from game_stats import *
 from sprites import Tool
@@ -13,13 +12,14 @@ class Player(pygame.sprite.Sprite):
         super().__init__(group)
 
         # general setup
-        self.image = pygame.image.load(ASSET_PATH_PLAYER)
+        self.image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
         self.rect = self.image.get_rect(center=pos)
         self.z = LAYERS[LAYER_MAIN]
 
         # movement attributes
         self.direction = pygame.math.Vector2()
         self.pos = pygame.math.Vector2(self.rect.center)
+        self.tool_pos = pygame.math.Vector2(self.rect.center)
         self.speed = MOVEMENT_SPEED_PLAYER
 
         # tools
@@ -27,14 +27,15 @@ class Player(pygame.sprite.Sprite):
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
         
-        # create player tool image 
         self.tool = Tool(
-            pos=self.pos,
-            surf=pygame.image.load(ASSET_PATH_PLAYER_TOOLS + self.selected_tool + ".png"),
-            groups=group
+            pos=self.tool_pos,
+            surf=pygame.image.load(
+                ASSET_PATH_PLAYER_TOOLS + self.selected_tool + ".png"
+            ).convert_alpha(),
+            groups=group,
         )
         self.tool_pos = pygame.math.Vector2()
-
+        
         self.rotation_angle = 0
 
         # entities
@@ -99,7 +100,9 @@ class Player(pygame.sprite.Sprite):
             if event.type == pygame.MOUSEWHEEL:
                 changing_tool = True
 
-        if (keys[pygame.K_q] or changing_tool) and not self.timers[TOOL_SWITCH_TIMER].active:
+        if (keys[pygame.K_q] or changing_tool) and not self.timers[
+            TOOL_SWITCH_TIMER
+        ].active:
             self.timers[TOOL_SWITCH_TIMER].activate()
             self.tool_index += 1
             self.tool_index = (
@@ -107,7 +110,6 @@ class Player(pygame.sprite.Sprite):
             )
             self.selected_tool = self.tools[self.tool_index]
             changing_tool = False
-
 
         # use entities
         if keys[pygame.K_LCTRL]:
@@ -117,9 +119,7 @@ class Player(pygame.sprite.Sprite):
 
         # change entities
 
-        if  keys[pygame.K_e]  and not self.timers[
-            ENTITY_SWITCH_TIMER
-        ].active:
+        if keys[pygame.K_e] and not self.timers[ENTITY_SWITCH_TIMER].active:
             self.timers[ENTITY_SWITCH_TIMER].activate()
             self.entity_index += 1
             self.entity_index = (
@@ -142,11 +142,9 @@ class Player(pygame.sprite.Sprite):
         self.rect.centery = self.pos.y
 
         # tool follow player
-        self.tool_pos.x = self.pos.x + 20
-        self.tool_pos.y = self.pos.y + 20
+        self.tool_pos.x = self.pos.x
+        self.tool_pos.y = self.pos.y - 30
         self.tool.rect.center = self.tool_pos.xy
-
-        self.tool.image
 
     def use_tool(self):
         # print(self.selected_entity)
@@ -164,4 +162,3 @@ class Player(pygame.sprite.Sprite):
         self.input()
         self.update_timers()
         self.move(dt)
-
