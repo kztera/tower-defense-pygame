@@ -12,7 +12,9 @@ class Player(pygame.sprite.Sprite):
         super().__init__(group)
 
         # general setup
-        self.image = pygame.image.load(ASSET_PATH_PLAYER + PLAYER_AXE + ".png").convert_alpha()
+        self.image = pygame.image.load(
+            ASSET_PATH_PLAYER + PLAYER_AXE + ".png"
+        ).convert_alpha()
         self.rect = self.image.get_rect(center=pos)
         self.z = LAYERS[LAYER_MAIN]
 
@@ -23,7 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = MOVEMENT_SPEED_PLAYER
 
         # collision
-        self.hitbox = self.rect.copy().inflate((-20, -20))
+        self.hitbox = self.rect.copy().inflate((-130, -130))
         self.collision_sprites = collision_sprites
 
         # tools
