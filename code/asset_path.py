@@ -4,10 +4,10 @@ import os
 ROOT_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # asset path : player body
-ASSET_PATH_PLAYER = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/body/player-base.png")
+ASSET_PATH_PLAYER = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/body/")
 
 # asset path : player tool
-ASSET_PATH_PLAYER_TOOLS = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/tools/player-")
+ASSET_PATH_PLAYER_TOOLS = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/body/player-")
 
 # asset path : ui tool
 ASSET_PATH_UI_TOOLS = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/tools/")

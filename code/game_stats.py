@@ -2,7 +2,8 @@
 MOVEMENT_SPEED_PLAYER = 500
 
 #
-PLAYER_STATUS = ""
+PLAYER_AXE = "player-pickaxe-t2"
+PLAYER_SPEAR = "player-spear-t2"
 
 # tool
 TOOL_AXE = "pickaxe-t2"

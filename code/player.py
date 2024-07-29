@@ -5,7 +5,6 @@ from support import *
 from timeCounter import Timer
 from asset_path import *
 from game_stats import *
-from sprites import Tool
 
 
 class Player(pygame.sprite.Sprite):
@@ -13,7 +12,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__(group)
 
         # general setup
-        self.image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
+        self.image = pygame.image.load(ASSET_PATH_PLAYER + PLAYER_AXE + ".png").convert_alpha()
         self.rect = self.image.get_rect(center=pos)
         self.z = LAYERS[LAYER_MAIN]
 
@@ -32,31 +31,25 @@ class Player(pygame.sprite.Sprite):
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
 
-        self.tool = Tool(
-            pos=self.tool_pos,
-            surf=pygame.image.load(
-                ASSET_PATH_PLAYER_TOOLS + self.selected_tool + ".png"
-            ).convert_alpha(),
-            groups=group
-        )
-        self.tool_pos = pygame.math.Vector2()
         self.using_tool = False
-        self.angle = 0
+        self.current_angle = 0
         self.swing = False
-        
+        self.max_angle = 0
+        self.min_angle = 0
+
         # entities
         self.entities = [
+            ENTITIES_WALL,
+            ENTITIES_DOOR,
+            ENTITIES_SLOW_TRAP,
             ENTITIES_ARROW_TOWER,
             ENTITIES_BOMB_TOWER,
             ENTITIES_CANNON_TOWER,
             ENTITIES_MAGE_TOWER,
             ENTITIES_MELEE_TOWER,
+            ENTITIES_HARVESTER,
             ENTITIES_GOLD_MINE,
             ENTITIES_GOLD_STASH,
-            ENTITIES_HARVESTER,
-            ENTITIES_SLOW_TRAP,
-            ENTITIES_WALL,
-            ENTITIES_DOOR,
         ]
         self.entity_index = 0
         self.selected_entity = self.entities[self.entity_index]
@@ -91,16 +84,19 @@ class Player(pygame.sprite.Sprite):
                 self.direction.x = 0
 
         # use tool
-        for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    self.using_tool = True
-                    self.angle = 0
-                    self.swing = True
-                    # timer for use tool
-                    self.timers[TOOL_USE_TIMER].activate()
-                    self.direction = pygame.math.Vector2()
-                    print("attack")
+        if not self.using_tool:
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        self.using_tool = True
+                        self.current_angle = self.calculate_current_angle()
+                        self.min_angle = self.current_angle
+                        self.max_angle = self.current_angle + 180
+                        self.swing = True
+                        # timer for use tool
+                        self.timers[TOOL_USE_TIMER].activate()
+                        self.direction = pygame.math.Vector2()
+                        print("attack")
 
         # change tool
         changing_tool = False
@@ -126,13 +122,42 @@ class Player(pygame.sprite.Sprite):
             self.direction = pygame.math.Vector2()
 
         # change entities
-        if keys[pygame.K_e] and not self.timers[ENTITY_SWITCH_TIMER].active:
+        if not self.timers[ENTITY_SWITCH_TIMER].active:
+            change = True
+            if keys[pygame.K_1]:
+                self.entity_index = 0
+            elif keys[pygame.K_2]:
+                self.entity_index = 1
+            elif keys[pygame.K_3]:
+                self.entity_index = 2
+            elif keys[pygame.K_4]:
+                self.entity_index = 3
+            elif keys[pygame.K_5]:
+                self.entity_index = 4
+            elif keys[pygame.K_6]:
+                self.entity_index = 5
+            elif keys[pygame.K_7]:
+                self.entity_index = 6
+            elif keys[pygame.K_8]:
+                self.entity_index = 7
+            elif keys[pygame.K_9]:
+                self.entity_index = 8
+            elif keys[pygame.K_0]:
+                self.entity_index = 9
+            else:
+                change = False
+
+            if change:
+                self.timers[ENTITY_SWITCH_TIMER].activate()
+                self.selected_entity = self.entities[self.entity_index]
+            """
             self.timers[ENTITY_SWITCH_TIMER].activate()
             self.entity_index += 1
             self.entity_index = (
                 self.entity_index if self.entity_index < len(self.entities) else 0
             )
             self.selected_entity = self.entities[self.entity_index]
+            """
 
     def collision(self, direction):
         for sprite in self.collision_sprites:
@@ -170,36 +195,46 @@ class Player(pygame.sprite.Sprite):
         self.rect.centery = self.hitbox.centery
         self.collision("vertical")
 
-        # tool follow player
-        self.tool_pos.x = self.pos.x
-        self.tool_pos.y = self.pos.y - 30
-        self.tool.rect.center = self.tool_pos.xy
-
     def rotate(self):
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-
-        player_image = pygame.image.load(ASSET_PATH_PLAYER).convert_alpha()
-        angle = math.atan2(mouse_y - self.rect.centery, mouse_x - self.rect.centerx)
-        angle = math.degrees(angle)
-        self.image = pygame.transform.rotozoom(player_image, -angle, 1)
-        self.rect = self.image.get_rect(center=self.rect.center)
-
-        tool_image = pygame.image.load(
-                ASSET_PATH_PLAYER_TOOLS + self.selected_tool + ".png"
-            ).convert_alpha()
+        player_image = pygame.image.load(
+            ASSET_PATH_PLAYER_TOOLS + self.selected_tool + ".png"
+        ).convert_alpha()
 
         if self.using_tool:
             if self.swing:
-                self.angle += 10
-                if self.angle >= 180:
+                self.current_angle += 10
+                if self.current_angle >= self.max_angle:
                     self.swing = False
             else:
-                self.angle -= 10
-                if self.angle <= 0:
-                    self.angle = 0
+                self.current_angle -= 10
+                if self.current_angle <= self.min_angle:
                     self.using_tool = False
-            self.tool.image = pygame.transform.rotozoom(tool_image, self.angle, 1)
-            self.tool.rect = self.tool.image.get_rect(center=self.tool.rect.center)
+        else:
+            self.current_angle = self.calculate_current_angle()
+
+        self.image = pygame.transform.rotozoom(player_image, self.current_angle, 1)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def calculate_current_angle(self):
+        # Lấy vị trí chuột
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        center_x, center_y = SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
+        # Tính vector từ tâm đến vị trí chuột
+        dx = mouse_x - center_x
+        dy = mouse_y - center_y
+
+        # Tính góc giữa vector đó và trục y dương
+        angle_radians = math.atan2(dy, dx)
+        angle_degrees = math.degrees(angle_radians)
+
+        # Chuyển đổi góc để hướng lên trên (0, 1) là 0 độ và góc tính theo chiều kim đồng hồ
+        angle_degrees = (-angle_degrees - 90) % 360
+
+        # Đảm bảo góc trong khoảng 0 - 360 độ
+        if angle_degrees < 0:
+            angle_degrees += 360
+        return angle_degrees
 
     def use_tool(self):
         # print(self.selected_entity)

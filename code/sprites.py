@@ -28,10 +28,3 @@ class Tree(Generic):
             (-self.rect.width // 3, -self.rect.height // 3)
         )
 
-
-class Tool(pygame.sprite.Sprite):
-    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_TOOL]):
-        super().__init__(groups)
-        self.image = surf
-        self.rect = self.image.get_rect(center=pos)
-        self.z = z
