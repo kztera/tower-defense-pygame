@@ -15,6 +15,8 @@ TOOL_SWITCH_TIMER = "tool switch"
 TIME_FOR_TOOL = 350
 TIME_FOR_TOOL_SWITCH = 200
 
+ANGLE_OF_TOOL_USE = 180
+
 # entities
 ENTITIES_ARROW_TOWER = "entities-arrow-tower"
 ENTITIES_BOMB_TOWER = "entities-bomb-tower"

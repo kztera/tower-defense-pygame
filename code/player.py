@@ -91,7 +91,7 @@ class Player(pygame.sprite.Sprite):
                         self.using_tool = True
                         self.current_angle = self.calculate_current_angle()
                         self.min_angle = self.current_angle
-                        self.max_angle = self.current_angle + 180
+                        self.max_angle = self.current_angle + ANGLE_OF_TOOL_USE
                         self.swing = True
                         # timer for use tool
                         self.timers[TOOL_USE_TIMER].activate()
