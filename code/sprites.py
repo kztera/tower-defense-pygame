@@ -30,25 +30,26 @@ class Tree(Generic):
         )
         self.taking_damage = False
         self.moving_target = False
-        self.waitting = False
         self.diection_of_damage = pygame.math.Vector2()
         self.start_pos = pygame.math.Vector2()
         self.end_pos = pygame.math.Vector2()
         self.timer = 0
         
-    def damage(self, location_of_perpetrator):
+    def damage(self, location_of_perpetrator, have_impact):
         if self.taking_damage:
-            return
+            return False
 
-        self.diection_of_damage.x = self.rect.centerx - location_of_perpetrator.x
-        self.diection_of_damage.y = self.rect.centery - location_of_perpetrator.y
-        self.diection_of_damage = self.diection_of_damage.normalize() 
-        self.start_pos = pygame.math.Vector2(self.rect.center)
-        self.end_pos = pygame.math.Vector2(self.rect.center + self.diection_of_damage * 40)
-        self.timer = 0
-        self.moving_target = True
-        self.waitting = False
-        self.taking_damage = True
+        if have_impact:
+            self.diection_of_damage.x = self.rect.centerx - location_of_perpetrator.x
+            self.diection_of_damage.y = self.rect.centery - location_of_perpetrator.y
+            self.diection_of_damage = self.diection_of_damage.normalize() 
+            self.start_pos = pygame.math.Vector2(self.rect.center)
+            self.end_pos = pygame.math.Vector2(self.rect.center + self.diection_of_damage * 20)
+            self.timer = 0
+            self.moving_target = True
+            self.taking_damage = True
+
+        return True
 
     def update(self, dt):
         if self.taking_damage:
@@ -59,12 +60,6 @@ class Tree(Generic):
                 else:
                     self.timer = 0
                     self.moving_target = False
-                    self.waitting = True
-            elif self.waitting:
-                self.timer += dt
-                if self.timer > 0.08:
-                    self.waitting = False
-                    self.timer = 0
             else:
                 self.timer += dt
                 if self.timer <= 0.1:

@@ -200,11 +200,11 @@ class Player(pygame.sprite.Sprite):
 
         if self.using_tool:
             if self.swing:
-                self.current_angle += 10
+                self.current_angle += 8
                 if self.current_angle >= self.max_angle:
                     self.swing = False
             else:
-                self.current_angle -= 10
+                self.current_angle -= 8
                 if self.current_angle <= self.min_angle:
                     self.using_tool = False
         else:
@@ -235,14 +235,15 @@ class Player(pygame.sprite.Sprite):
         return angle_degrees
 
     def use_tool(self):
-        # if self.selected_tool == self.tools[TOOL_AXE]:
         if self.using_tool:
             for tree in self.tree_sprites:
                 if tree.rect.collidepoint(self.target_pos) and not tree in self.has_interacted_tree:
-                    tree.damage(self.pos)
+                    have_impact = False
+                    if self.selected_tool == TOOL_AXE:
+                        have_impact = True
+                    tree.damage(self.pos, have_impact)
                     self.has_interacted_tree.add(tree)
 
-            # print(self.selected_tool)
         return
 
     def use_entity(self):
@@ -279,6 +280,5 @@ class Player(pygame.sprite.Sprite):
         self.input()
         self.update_timers()
         self.move(dt)
-        # self.get_target_pos()
-
+        self.get_target_pos()
         self.rotate()
