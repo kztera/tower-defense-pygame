@@ -29,14 +29,12 @@ class Tree(Generic):
             (-self.rect.width // 3, -self.rect.height // 3)
         )
         self.taking_damage = False
-        self.diection_of_damage = pygame.math.Vector2()
-        self.timer = 0
-        self.start_pos = pygame.math.Vector2()
-        self.end_pos = pygame.math.Vector2()
-
         self.moving_target = False
         self.waitting = False
-
+        self.diection_of_damage = pygame.math.Vector2()
+        self.start_pos = pygame.math.Vector2()
+        self.end_pos = pygame.math.Vector2()
+        self.timer = 0
         
     def damage(self, location_of_perpetrator):
         if self.taking_damage:
@@ -45,10 +43,8 @@ class Tree(Generic):
         self.diection_of_damage.x = self.rect.centerx - location_of_perpetrator.x
         self.diection_of_damage.y = self.rect.centery - location_of_perpetrator.y
         self.diection_of_damage = self.diection_of_damage.normalize() 
-
         self.start_pos = pygame.math.Vector2(self.rect.center)
         self.end_pos = pygame.math.Vector2(self.rect.center + self.diection_of_damage * 40)
-
         self.timer = 0
         self.moving_target = True
         self.waitting = False
