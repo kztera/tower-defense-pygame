@@ -18,6 +18,7 @@ class Level:
         self.all_sprites = CameraGroup()
         self.collision_sprites = pygame.sprite.Group()
         self.tree_sprites = pygame.sprite.Group()
+        self.stone_sprites = pygame.sprite.Group()
 
         # setup
         self.setup()
@@ -33,7 +34,8 @@ class Level:
             Stone(
                 pos=(obj.x, obj.y),
                 surf=obj.image,
-                groups=[self.all_sprites, self.collision_sprites],
+                groups=[self.all_sprites, self.collision_sprites, self.stone_sprites],
+                player_add= self.player_add
             )
 
         # Trees
@@ -42,6 +44,7 @@ class Level:
                 pos=(obj.x, obj.y),
                 surf=obj.image,
                 groups=[self.all_sprites, self.collision_sprites, self.tree_sprites],
+                player_add= self.player_add
             )
 
         # create player
@@ -51,7 +54,8 @@ class Level:
                     pos = (obj.x, obj.y), 
                     group = self.all_sprites, 
                     collision_sprites = self.collision_sprites, 
-                    tree_sprites = self.tree_sprites
+                    tree_sprites = self.tree_sprites,
+                    stone_sprites = self.stone_sprites 
                 )
 
         # create ground
@@ -62,12 +66,16 @@ class Level:
             z=LAYERS[LAYER_GROUND],
         )
 
+    def player_add(self, item):
+        self.player.items_inventory[item] += 1
+
     def run(self, dt):
         self.display_surface.fill("black")
         self.all_sprites.custom_draw(self.player)
         self.all_sprites.update(dt)
 
         self.overlay.display()
+        # print(self.player.items_inventory)
 
 
 class CameraGroup(pygame.sprite.Group):

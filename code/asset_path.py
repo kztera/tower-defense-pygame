@@ -20,3 +20,6 @@ ASSET_PATH_GROUND = os.path.join(ROOT_FOLDER_PATH, "../graphics/world/ground.png
 
 # asset path : map
 ASSET_PATH_MAP = os.path.join(ROOT_FOLDER_PATH, "../data/map/map.tmx")
+
+# asset path : font
+ASSET_PATH_FONT = os.path.join(ROOT_FOLDER_PATH, "../font/")

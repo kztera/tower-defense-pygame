@@ -15,7 +15,7 @@ TOOL_SWITCH_TIMER = "tool switch"
 TIME_FOR_TOOL = 350
 TIME_FOR_TOOL_SWITCH = 200
 
-ANGLE_OF_TOOL_USE = 180
+ANGLE_OF_TOOL_USE = 120
 
 # entities
 ENTITIES_ARROW_TOWER = "entities-arrow-tower"
@@ -35,3 +35,14 @@ ENTITY_SWITCH_TIMER = "entity switch"
 
 TIME_FOR_ENTITY = 350
 TIME_FOR_ENTITY_SWITCH = 200
+
+# inventory
+ITEM_WOOD = "wood"
+ITEM_STONE = "stone"
+ITEM_GOLD = "gold"
+ITEM_TOKEN = "token"
+
+# font
+FONT_TEXT = "font_text"
+FONT_LUCKIEST_GUY = "LuckiestGuy-Regular"
+

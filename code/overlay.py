@@ -1,7 +1,8 @@
 import pygame
 
 from settings import *
-from asset_path import ASSET_PATH_UI_TOOLS, ASSET_PATH_UI_ENTITIES
+from asset_path import *
+from game_stats import *
 
 
 class Overlay:
@@ -9,6 +10,8 @@ class Overlay:
         # General setup
         self.display_surface = pygame.display.get_surface()
         self.player = player
+
+        self.font_text = pygame.font.Font((ASSET_PATH_FONT + FONT_TEXT + ".ttf"), 16)
 
         self.tools_surf = {
             tool: pygame.image.load(ASSET_PATH_UI_TOOLS + f"{tool}.png").convert_alpha()
@@ -22,6 +25,7 @@ class Overlay:
             for entity in player.entities
         }
 
+
     def display(self):
         self.display_surface = pygame.display.get_surface()
         current_width, current_height = self.display_surface.get_size()
@@ -29,6 +33,7 @@ class Overlay:
         overlay_positions = {
             OVERLAY_TOOL: (current_width / 2, current_height - 150),
             OVERLAY_ENTITY: (current_width / 2, current_height - 70),
+            ITEM_INVENTORY:(current_width -200, current_height - 200),
         }
 
         self._display_items(
@@ -38,6 +43,7 @@ class Overlay:
             overlay_positions[OVERLAY_TOOL],
             OVERLAY_TOOL_DISTANCE,
         )
+
         self._display_items(
             self.player.entities,
             self.entities_surf,
@@ -46,6 +52,9 @@ class Overlay:
             OVERLAY_ENTITY_DISTANCE,
             True,
         )
+
+        self.display_item_inventory(overlay_positions[ITEM_INVENTORY])
+
 
     def _display_items(
         self, items, surfaces, selected_item, position, distance, show_numbers=False
@@ -97,3 +106,32 @@ class Overlay:
                 matte_rect.centerx -= first_position
                 matte_rect.centerx += distance * i
                 self.display_surface.blit(matte, matte_rect)
+
+    def display_item_inventory(self, pos):
+        self.item_names = list(self.player.items_inventory.keys())
+        self.item_values = list(self.player.items_inventory.values())
+
+        self.items_inventory_surf = {
+            i: self.font_text.render(f'{self.item_names[i]}     {self.item_values[i]}', False, "green")
+            for i in range(len(self.item_names))
+        }
+
+        spawn_pos = pygame.math.Vector2(pos)
+        rect_0 = self.items_inventory_surf[0].get_rect(center = spawn_pos)
+        self.display_surface.blit(self.items_inventory_surf[0], rect_0)
+
+        spawn_pos.x += 100
+        rect_1 = self.items_inventory_surf[1].get_rect(center = spawn_pos)
+        self.display_surface.blit(self.items_inventory_surf[1], rect_1)
+
+        spawn_pos.x -= 100
+        spawn_pos.y += 50
+        rect_2 = self.items_inventory_surf[2].get_rect(center = spawn_pos)
+        self.display_surface.blit(self.items_inventory_surf[2], rect_2)
+
+        spawn_pos.x += 100
+        rect_3 = self.items_inventory_surf[3].get_rect(center = spawn_pos)
+        self.display_surface.blit(self.items_inventory_surf[3], rect_3)
+
+
+                

@@ -20,6 +20,7 @@ DIRECTION_DIAGONAL_RIGHT_UP = "diagonal right up"
 # overlay
 OVERLAY_TOOL = "tool"
 OVERLAY_ENTITY = "entity"
+ITEM_INVENTORY = "item inventory"
 
 OVERLAY_TOOL_DISTANCE = 75
 OVERLAY_ENTITY_DISTANCE = 75
