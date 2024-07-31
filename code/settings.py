@@ -6,6 +6,17 @@ SCREEN_WIDTH_DEFAULT = 1280
 SCREEN_HEIGHT_DEFAULT = 720
 TILE_SIZE = 48
 
+# direction
+DIRECTION_LEFT = "left"
+DIRECTION_RIGHT = "right"
+DIRECTION_DOWN = "down"
+DIRECTION_UP = "up"
+
+DIRECTION_DIAGONAL_LEFT_DOWN = "diagonal left down"
+DIRECTION_DIAGONAL_LEFT_UP = "diagonal left up"
+DIRECTION_DIAGONAL_RIGHT_DOWN = "diagonal right down"
+DIRECTION_DIAGONAL_RIGHT_UP = "diagonal right up"
+
 # overlay
 OVERLAY_TOOL = "tool"
 OVERLAY_ENTITY = "entity"
@@ -14,14 +25,18 @@ OVERLAY_TOOL_DISTANCE = 75
 OVERLAY_ENTITY_DISTANCE = 75
 
 PLAYER_TOOL_OFFSET = {
-    "left": Vector2(-50, 40),
-    "right": Vector2(50, 40),
-    "up": Vector2(0, -10),
-    "down": Vector2(0, 50),
+    DIRECTION_LEFT: Vector2(-70, 0),
+    DIRECTION_RIGHT: Vector2(70, 0),
+    DIRECTION_UP: Vector2(0, -70),
+    DIRECTION_DOWN: Vector2(0, 70),
+    DIRECTION_DIAGONAL_LEFT_DOWN: Vector2(-55, 55),
+    DIRECTION_DIAGONAL_LEFT_UP: Vector2(-55, -55),
+    DIRECTION_DIAGONAL_RIGHT_DOWN: Vector2(55, 55),
+    DIRECTION_DIAGONAL_RIGHT_UP: Vector2(55, -55),
 }
 
 LAYER_GROUND = "Ground"
-LAYER_TOOL = "Tool"
+LAYER_PLAYER = "Player"
 LAYER_MAIN = "Main"
 LAYER_STONE = "Stones"
 LAYER_TREE = "Trees"
@@ -30,6 +45,6 @@ LAYERS = {
     LAYER_GROUND: 0,
     LAYER_STONE: 1,
     LAYER_TREE: 2,
-    LAYER_TOOL: 3,
+    LAYER_PLAYER: 3,
     LAYER_MAIN: 4,
 }

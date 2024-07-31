@@ -1,7 +1,7 @@
 # movement
 MOVEMENT_SPEED_PLAYER = 500
 
-#
+# player tool
 PLAYER_AXE = "player-pickaxe-t2"
 PLAYER_SPEAR = "player-spear-t2"
 

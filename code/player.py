@@ -8,7 +8,7 @@ from game_stats import *
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, group, collision_sprites):
+    def __init__(self, pos, group, collision_sprites, tree_sprites):
         super().__init__(group)
 
         # general setup
@@ -23,6 +23,7 @@ class Player(pygame.sprite.Sprite):
         self.pos = pygame.math.Vector2(self.rect.center)
         self.tool_pos = pygame.math.Vector2(self.rect.center)
         self.speed = MOVEMENT_SPEED_PLAYER
+        self.direction_state = DIRECTION_DOWN
 
         # collision
         self.hitbox = self.rect.copy().inflate((-130, -130))
@@ -64,6 +65,11 @@ class Player(pygame.sprite.Sprite):
             ENTITY_SWITCH_TIMER: Timer(TIME_FOR_ENTITY_SWITCH),
         }
 
+        # interaction
+        self.tree_sprites = tree_sprites
+
+        self.has_interacted_tree = pygame.sprite.Group()
+
     def input(self):
         # keybroad button input
         keys = pygame.key.get_pressed()
@@ -87,17 +93,17 @@ class Player(pygame.sprite.Sprite):
         # use tool
         if not self.using_tool:
             for event in events:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        self.using_tool = True
-                        self.current_angle = self.calculate_current_angle()
-                        self.min_angle = self.current_angle
-                        self.max_angle = self.current_angle + ANGLE_OF_TOOL_USE
-                        self.swing = True
-                        # timer for use tool
-                        self.timers[TOOL_USE_TIMER].activate()
-                        self.direction = pygame.math.Vector2()
-                        print("attack")
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    self.using_tool = True
+                    self.current_angle = self.calculate_current_angle()
+                    self.min_angle = self.current_angle
+                    self.max_angle = self.current_angle + ANGLE_OF_TOOL_USE
+                    self.swing = True
+                    # 
+                    self.get_target_pos()
+                    self.has_interacted_tree.empty()
+                    # timer for use tool
+                    self.timers[TOOL_USE_TIMER].activate()
 
         # change tool
         changing_tool = False
@@ -120,7 +126,6 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_LCTRL]:
             # timer for use defense base
             self.timers[ENTITY_USE_TIMER].activate()
-            self.direction = pygame.math.Vector2()
 
         # change entities
         if not self.timers[ENTITY_SWITCH_TIMER].active:
@@ -151,14 +156,6 @@ class Player(pygame.sprite.Sprite):
             if change:
                 self.timers[ENTITY_SWITCH_TIMER].activate()
                 self.selected_entity = self.entities[self.entity_index]
-            """
-            self.timers[ENTITY_SWITCH_TIMER].activate()
-            self.entity_index += 1
-            self.entity_index = (
-                self.entity_index if self.entity_index < len(self.entities) else 0
-            )
-            self.selected_entity = self.entities[self.entity_index]
-            """
 
     def collision(self, direction):
         for sprite in self.collision_sprites:
@@ -238,12 +235,41 @@ class Player(pygame.sprite.Sprite):
         return angle_degrees
 
     def use_tool(self):
-        # print(self.selected_entity)
+        # if self.selected_tool == self.tools[TOOL_AXE]:
+        if self.using_tool:
+            for tree in self.tree_sprites:
+                if tree.rect.collidepoint(self.target_pos) and not tree in self.has_interacted_tree:
+                    tree.damage(self.pos)
+                    self.has_interacted_tree.add(tree)
+
+            # print(self.selected_tool)
         return
 
     def use_entity(self):
-        # print(self.selected_tool)
+        # print(self.selected_entity)
         return
+
+    def get_target_pos(self):
+        mouse_direction = self.calculate_current_angle()
+
+        if mouse_direction <= 22.5 or mouse_direction > 337.5:
+            self.direction_state = DIRECTION_UP
+        elif mouse_direction <= 67.5:
+            self.direction_state = DIRECTION_DIAGONAL_LEFT_UP
+        elif mouse_direction <= 112.5:
+            self.direction_state = DIRECTION_LEFT
+        elif mouse_direction <= 157.5:
+            self.direction_state = DIRECTION_DIAGONAL_LEFT_DOWN
+        elif mouse_direction <= 202.5:
+            self.direction_state = DIRECTION_DOWN
+        elif mouse_direction <= 247.5:
+            self.direction_state = DIRECTION_DIAGONAL_RIGHT_DOWN
+        elif mouse_direction <= 292.5:
+            self.direction_state = DIRECTION_RIGHT
+        elif mouse_direction <= 337.5:
+            self.direction_state = DIRECTION_DIAGONAL_RIGHT_UP
+
+        self.target_pos = self.rect.center + PLAYER_TOOL_OFFSET[self.direction_state]
 
     def update_timers(self):
         for timer in self.timers.values():
@@ -253,4 +279,6 @@ class Player(pygame.sprite.Sprite):
         self.input()
         self.update_timers()
         self.move(dt)
+        # self.get_target_pos()
+
         self.rotate()
