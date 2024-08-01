@@ -43,6 +43,5 @@ ITEM_GOLD = "gold"
 ITEM_TOKEN = "token"
 
 # font
-FONT_TEXT = "font_text"
+FONT_TEXT = "SVN-New Athletic M54"
 FONT_LUCKIEST_GUY = "LuckiestGuy-Regular"
-

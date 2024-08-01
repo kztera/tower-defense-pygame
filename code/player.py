@@ -10,7 +10,7 @@ from game_stats import *
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, group, collision_sprites, tree_sprites, stone_sprites):
         super().__init__(group)
-
+        self.current_wave = 0
         # general setup
         self.image = pygame.image.load(
             ASSET_PATH_PLAYER + PLAYER_AXE + ".png"
@@ -75,14 +75,13 @@ class Player(pygame.sprite.Sprite):
 
         # inventory
         self.items_inventory = {
-            ITEM_WOOD : 0,
-            ITEM_STONE : 0,
-            ITEM_GOLD : 0,
-            ITEM_TOKEN : 0
+            ITEM_WOOD: 0,
+            ITEM_STONE: 0,
+            ITEM_GOLD: 0,
+            ITEM_TOKEN: 0,
         }
 
     def input(self):
-        # keybroad button input
         keys = pygame.key.get_pressed()
         events = pygame.event.get()
 
@@ -111,30 +110,32 @@ class Player(pygame.sprite.Sprite):
                     self.min_angle = self.current_angle
                     self.max_angle = self.current_angle + ANGLE_OF_TOOL_USE
                     self.swing = True
-                    # 
                     self.get_target_pos()
                     self.has_interacted_tree.empty()
                     self.has_interacted_stone.empty()
-                    # timer for use tool
                     self.timers[TOOL_USE_TIMER].activate()
 
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and not self.auto_using_tool:
+                elif (
+                    event.type == pygame.KEYDOWN
+                    and event.key == pygame.K_SPACE
+                    and not self.auto_using_tool
+                ):
                     self.auto_using_tool = True
                     self.using_tool = True
                     self.current_angle = self.calculate_current_angle()
                     self.min_angle = self.current_angle
                     self.max_angle = self.current_angle + ANGLE_OF_TOOL_USE
                     self.swing = True
-                    # 
                     self.get_target_pos()
                     self.has_interacted_tree.empty()
                     self.has_interacted_stone.empty()
-                    # timer for use tool
                     self.timers[TOOL_USE_TIMER].activate()
         else:
             if self.auto_using_tool:
                 for event in events:
-                    if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
+                    if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (
+                        event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE
+                    ):
                         self.auto_using_tool = False
 
         # change tool
@@ -154,12 +155,9 @@ class Player(pygame.sprite.Sprite):
             self.selected_tool = self.tools[self.tool_index]
             changing_tool = False
 
-        # use entities
         if keys[pygame.K_LCTRL]:
-            # timer for use defense base
             self.timers[ENTITY_USE_TIMER].activate()
 
-        # change entities
         if not self.timers[ENTITY_SWITCH_TIMER].active:
             change = True
             if keys[pygame.K_1]:
@@ -241,7 +239,7 @@ class Player(pygame.sprite.Sprite):
                     self.using_tool = False
         else:
             self.current_angle = self.calculate_current_angle()
-        
+
         self.image = pygame.transform.rotozoom(player_image, self.current_angle, 1)
         self.rect = self.image.get_rect(center=self.rect.center)
 
@@ -251,32 +249,23 @@ class Player(pygame.sprite.Sprite):
             self.min_angle = self.current_angle
             self.max_angle = self.current_angle + ANGLE_OF_TOOL_USE
             self.swing = True
-            # 
             self.get_target_pos()
             self.has_interacted_tree.empty()
             self.has_interacted_stone.empty()
-            # timer for use tool
             self.timers[TOOL_USE_TIMER].activate()
 
-
-
     def calculate_current_angle(self):
-        # Lấy vị trí chuột
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
         center_x, center_y = SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
-        # Tính vector từ tâm đến vị trí chuột
         dx = mouse_x - center_x
         dy = mouse_y - center_y
 
-        # Tính góc giữa vector đó và trục y dương
         angle_radians = math.atan2(dy, dx)
         angle_degrees = math.degrees(angle_radians)
 
-        # Chuyển đổi góc để hướng lên trên (0, 1) là 0 độ và góc tính theo chiều kim đồng hồ
         angle_degrees = (-angle_degrees - 90) % 360
 
-        # Đảm bảo góc trong khoảng 0 - 360 độ
         if angle_degrees < 0:
             angle_degrees += 360
         return angle_degrees
@@ -288,12 +277,18 @@ class Player(pygame.sprite.Sprite):
                 have_impact = True
 
             for tree in self.tree_sprites:
-                if tree.rect.collidepoint(self.target_pos) and not tree in self.has_interacted_tree:
+                if (
+                    tree.rect.collidepoint(self.target_pos)
+                    and not tree in self.has_interacted_tree
+                ):
                     tree.damage(self.pos, have_impact)
                     self.has_interacted_tree.add(tree)
-            
+
             for stone in self.stone_sprites:
-                if stone.rect.collidepoint(self.target_pos) and not stone in self.has_interacted_stone:
+                if (
+                    stone.rect.collidepoint(self.target_pos)
+                    and not stone in self.has_interacted_stone
+                ):
                     stone.damage(self.pos, have_impact)
                     self.has_interacted_stone.add(stone)
 
@@ -330,6 +325,6 @@ class Player(pygame.sprite.Sprite):
     def update(self, dt):
         self.input()
         self.update_timers()
-        
+
         self.move(dt)
         self.rotate()

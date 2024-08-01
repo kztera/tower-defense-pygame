@@ -35,7 +35,7 @@ class Level:
                 pos=(obj.x, obj.y),
                 surf=obj.image,
                 groups=[self.all_sprites, self.collision_sprites, self.stone_sprites],
-                player_add= self.player_add
+                player_add=self.player_add,
             )
 
         # Trees
@@ -44,18 +44,18 @@ class Level:
                 pos=(obj.x, obj.y),
                 surf=obj.image,
                 groups=[self.all_sprites, self.collision_sprites, self.tree_sprites],
-                player_add= self.player_add
+                player_add=self.player_add,
             )
 
         # create player
         for obj in tmx_data.get_layer_by_name(LAYER_PLAYER):
             if obj.name == "Start":
                 self.player = Player(
-                    pos = (obj.x, obj.y), 
-                    group = self.all_sprites, 
-                    collision_sprites = self.collision_sprites, 
-                    tree_sprites = self.tree_sprites,
-                    stone_sprites = self.stone_sprites 
+                    pos=(obj.x, obj.y),
+                    group=self.all_sprites,
+                    collision_sprites=self.collision_sprites,
+                    tree_sprites=self.tree_sprites,
+                    stone_sprites=self.stone_sprites,
                 )
 
         # create ground
@@ -99,10 +99,12 @@ class CameraGroup(pygame.sprite.Group):
 
                     # anaytics
                     if sprite == player:
-                        pygame.draw.rect(self.display_surface, 'red', offset_rect, 5)
+                        # pygame.draw.rect(self.display_surface, 'red', offset_rect, 5)
                         hitbox_rect = player.hitbox.copy()
                         hitbox_rect.center = offset_rect.center
-                        pygame.draw.rect(self.display_surface, 'green', hitbox_rect, 5)
-                        tartget_pos = offset_rect.center + PLAYER_TOOL_OFFSET[player.direction_state]
-                        pygame.draw.circle(self.display_surface, 'blue', tartget_pos, 5)
-
+                        # pygame.draw.rect(self.display_surface, 'green', hitbox_rect, 5)
+                        tartget_pos = (
+                            offset_rect.center
+                            + PLAYER_TOOL_OFFSET[player.direction_state]
+                        )
+                        # pygame.draw.circle(self.display_surface, 'blue', tartget_pos, 5)

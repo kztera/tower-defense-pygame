@@ -25,7 +25,6 @@ class Overlay:
             for entity in player.entities
         }
 
-
     def display(self):
         self.display_surface = pygame.display.get_surface()
         current_width, current_height = self.display_surface.get_size()
@@ -33,7 +32,7 @@ class Overlay:
         overlay_positions = {
             OVERLAY_TOOL: (current_width / 2, current_height - 150),
             OVERLAY_ENTITY: (current_width / 2, current_height - 70),
-            ITEM_INVENTORY:(current_width -200, current_height - 200),
+            ITEM_INVENTORY: (current_width - 200, current_height - 200),
         }
 
         self._display_items(
@@ -54,7 +53,6 @@ class Overlay:
         )
 
         self.display_item_inventory(overlay_positions[ITEM_INVENTORY])
-
 
     def _display_items(
         self, items, surfaces, selected_item, position, distance, show_numbers=False
@@ -108,30 +106,75 @@ class Overlay:
                 self.display_surface.blit(matte, matte_rect)
 
     def display_item_inventory(self, pos):
-        self.item_names = list(self.player.items_inventory.keys())
-        self.item_values = list(self.player.items_inventory.values())
+        background_width = 200
+        background_height = 220
+        padding = 10
+        margin_right = 20
+        margin_bottom = 40
+        item_height = 40
+        font_color = (200, 200, 200)
+        background_color = (0, 0, 0, 120)
+        background = pygame.Surface(
+            (background_width, background_height), pygame.SRCALPHA
+        )
 
-        self.items_inventory_surf = {
-            i: self.font_text.render(f'{self.item_names[i]}     {self.item_values[i]}', False, "green")
-            for i in range(len(self.item_names))
-        }
+        pos = (pos[0] - margin_right, pos[1] - margin_bottom)
 
-        spawn_pos = pygame.math.Vector2(pos)
-        rect_0 = self.items_inventory_surf[0].get_rect(center = spawn_pos)
-        self.display_surface.blit(self.items_inventory_surf[0], rect_0)
+        pygame.draw.rect(
+            background, background_color, background.get_rect(), border_radius=10
+        )
 
-        spawn_pos.x += 100
-        rect_1 = self.items_inventory_surf[1].get_rect(center = spawn_pos)
-        self.display_surface.blit(self.items_inventory_surf[1], rect_1)
+        background_rect = background.get_rect(topleft=pos)
+        self.display_surface.blit(background, background_rect)
 
-        spawn_pos.x -= 100
-        spawn_pos.y += 50
-        rect_2 = self.items_inventory_surf[2].get_rect(center = spawn_pos)
-        self.display_surface.blit(self.items_inventory_surf[2], rect_2)
+        for i, (item_name, item_value) in enumerate(
+            self.player.items_inventory.items()
+        ):
+            item_text = f"{item_name.upper()}"
+            value_text = f"{item_value}"
 
-        spawn_pos.x += 100
-        rect_3 = self.items_inventory_surf[3].get_rect(center = spawn_pos)
-        self.display_surface.blit(self.items_inventory_surf[3], rect_3)
+            item_surf = self.font_text.render(item_text, True, font_color)
+            value_surf = self.font_text.render(value_text, True, font_color)
 
+            item_rect = item_surf.get_rect(
+                topleft=(pos[0] + padding, pos[1] + padding + i * item_height)
+            )
+            value_rect = value_surf.get_rect(
+                topright=(
+                    pos[0] + background_width - padding,
+                    pos[1] + padding + i * item_height,
+                )
+            )
 
-                
+            self.display_surface.blit(item_surf, item_rect)
+            self.display_surface.blit(value_surf, value_rect)
+
+        wave_text = "WAVE"
+        wave_number = (
+            # self.player.current_wave chỉ khi căn cứ được đặt thì mới bắt đầu dùng
+            "-"
+        )
+        wave_surf = self.font_text.render(wave_text, True, font_color)
+        number_surf = self.font_text.render(wave_number, True, font_color)
+
+        wave_rect = wave_surf.get_rect(
+            bottomleft=(pos[0] + padding, pos[1] + background_height - padding)
+        )
+        number_rect = number_surf.get_rect(
+            bottomright=(
+                pos[0] + background_width - padding,
+                pos[1] + background_height - padding,
+            )
+        )
+
+        self.display_surface.blit(wave_surf, wave_rect)
+        self.display_surface.blit(number_surf, number_rect)
+
+        line_y = pos[1] + background_height - item_height - padding // 2
+        pygame.draw.line(
+            self.display_surface,
+            font_color,
+            (pos[0], line_y),
+            (pos[0] + background_width, line_y),
+            1,
+        )
