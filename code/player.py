@@ -5,18 +5,21 @@ from support import *
 from timeCounter import Timer
 from asset_path import *
 from game_stats import *
-
+from sprites import Tower
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, group, collision_sprites, tree_sprites, stone_sprites):
+    def __init__(self, pos, group, collision_sprites, tree_sprites, stone_sprites, entity_sprites):
         super().__init__(group)
+
+        self.all_group = group
         self.current_wave = 0
+
         # general setup
         self.image = pygame.image.load(
             ASSET_PATH_PLAYER + PLAYER_AXE + ".png"
         ).convert_alpha()
         self.rect = self.image.get_rect(center=pos)
-        self.z = LAYERS[LAYER_MAIN]
+        self.z = LAYERS[LAYER_PLAYER]
 
         # movement attributes
         self.direction = pygame.math.Vector2()
@@ -80,6 +83,10 @@ class Player(pygame.sprite.Sprite):
             ITEM_GOLD: 0,
             ITEM_TOKEN: 0,
         }
+
+        # handle create tower
+        self.entity_sprites = entity_sprites
+        self.is_creating_tower = False
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -154,10 +161,16 @@ class Player(pygame.sprite.Sprite):
             )
             self.selected_tool = self.tools[self.tool_index]
             changing_tool = False
+            self.is_creating_tower = False
 
-        if keys[pygame.K_LCTRL]:
-            self.timers[ENTITY_USE_TIMER].activate()
-
+        # use tower
+        if self.is_creating_tower:
+            for event in events:
+                if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
+                    self.timers[ENTITY_USE_TIMER].activate()
+                    self.create_tower()
+        
+        # change tower
         if not self.timers[ENTITY_SWITCH_TIMER].active:
             change = True
             if keys[pygame.K_1]:
@@ -186,6 +199,7 @@ class Player(pygame.sprite.Sprite):
             if change:
                 self.timers[ENTITY_SWITCH_TIMER].activate()
                 self.selected_entity = self.entities[self.entity_index]
+                self.is_creating_tower = True
 
     def collision(self, direction):
         for sprite in self.collision_sprites:
@@ -295,6 +309,24 @@ class Player(pygame.sprite.Sprite):
     def use_entity(self):
         # print(self.selected_entity)
         return
+    
+    def create_tower(self):
+        pos = pygame.mouse.get_pos()
+
+        first_dash_position = self.selected_entity.find('-')
+        type_entity = self.selected_entity[first_dash_position + 1:]
+        # base_surf = pygame.image.load(ASSET_PATH_ENTITIES + type_entity +"/base/" + type_entity + "-t1-base.png").convert_alpha()
+        base_surf = pygame.image.load(ASSET_PATH_ENTITIES).convert_alpha()
+        
+        #self.display_surface = pygame.display.get_surface()
+        tower = Tower(
+            pos = pos,
+            surf = base_surf,
+            groups = [self.all_group, self.entity_sprites],
+            z = LAYERS[LAYER_TOWER])
+        
+        self.all_group.add(tower)
+        # self.display_surface.blit(tower.image, pos)
 
     def get_target_pos(self):
         mouse_direction = self.calculate_current_angle()

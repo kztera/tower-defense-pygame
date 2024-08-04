@@ -5,8 +5,7 @@ from pytmx.util_pygame import load_pygame
 
 from player import Player
 from overlay import Overlay
-from sprites import Generic, Stone, Tree
-
+from sprites import Generic, Stone, Tree, Tower
 
 class Level:
     def __init__(self):
@@ -19,6 +18,7 @@ class Level:
         self.collision_sprites = pygame.sprite.Group()
         self.tree_sprites = pygame.sprite.Group()
         self.stone_sprites = pygame.sprite.Group()
+        self.entity_sprites = pygame.sprite.Group()
 
         # setup
         self.setup()
@@ -56,6 +56,7 @@ class Level:
                     collision_sprites=self.collision_sprites,
                     tree_sprites=self.tree_sprites,
                     stone_sprites=self.stone_sprites,
+                    entity_sprites = self.entity_sprites
                 )
 
         # create ground
@@ -76,7 +77,6 @@ class Level:
 
         self.overlay.display()
         # print(self.player.items_inventory)
-
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):

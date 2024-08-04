@@ -2,8 +2,8 @@ from pygame.math import Vector2
 import pygame
 
 # screen
-SCREEN_WIDTH_DEFAULT = 1728
-SCREEN_HEIGHT_DEFAULT = 1024
+SCREEN_WIDTH_DEFAULT = 1280
+SCREEN_HEIGHT_DEFAULT = 720
 TILE_SIZE = 48
 
 # direction
@@ -41,11 +41,13 @@ LAYER_PLAYER = "Player"
 LAYER_MAIN = "Main"
 LAYER_STONE = "Stones"
 LAYER_TREE = "Trees"
+LAYER_TOWER = "Tower"
 
 LAYERS = {
     LAYER_GROUND: 0,
     LAYER_STONE: 1,
     LAYER_TREE: 2,
     LAYER_PLAYER: 3,
-    LAYER_MAIN: 4,
+    LAYER_TOWER : 4,
+    LAYER_MAIN: 5,
 }

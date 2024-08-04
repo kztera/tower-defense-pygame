@@ -1,4 +1,3 @@
-from typing import Any
 import pygame
 from settings import *
 from game_stats import *
@@ -125,3 +124,16 @@ class Tree(Generic):
                     )
                 else:
                     self.taking_damage = False
+
+
+class Tower(pygame.sprite.Sprite):
+    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_TOWER]):
+        super().__init__(groups)
+        self.image = surf
+        self.rect = self.image.get_rect(center=pos)
+        self.z = z
+        # self.hitbox = self.rect.copy().inflate(
+            # (-self.rect.width // 5, -self.rect.height // 5)
+        #)
+
+        print("Create success")

@@ -12,7 +12,7 @@ ASSET_PATH_PLAYER_TOOLS = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/
 # asset path : ui tool
 ASSET_PATH_UI_TOOLS = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/tools/")
 
-# asset path : overlay
+# asset path : ui entities
 ASSET_PATH_UI_ENTITIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/entities/")
 
 # asset path : ground
@@ -23,3 +23,7 @@ ASSET_PATH_MAP = os.path.join(ROOT_FOLDER_PATH, "../data/map/map.tmx")
 
 # asset path : font
 ASSET_PATH_FONT = os.path.join(ROOT_FOLDER_PATH, "../font/")
+
+# asset path : entities
+ASSET_PATH_ENTITIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/body/player-base.png")
+

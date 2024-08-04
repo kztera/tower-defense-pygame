@@ -1,5 +1,5 @@
 # movement
-MOVEMENT_SPEED_PLAYER = 500
+MOVEMENT_SPEED_PLAYER = 400
 
 # player tool
 PLAYER_AXE = "player-pickaxe-t2"
