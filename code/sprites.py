@@ -139,16 +139,36 @@ class Sample_Entity(Generic):
         self.hitbox = None
         self.player = player
 
-    def get_pos_mouse_on_map(self):
+    def snap_to_grid_on_map(self):
         pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
         self.offset = pygame.math.Vector2()
         self.offset.x = self.player.rect.centerx - SCREEN_WIDTH_DEFAULT / 2
         self.offset.y = self.player.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
         pos_mouse_on_map = pos_mouse_on_screen + self.offset
+
+        is_small_structure = self.player.selected_entity in [
+            ENTITIES_WALL,
+            ENTITIES_DOOR,
+            ENTITIES_SLOW_TRAP,
+        ]
+
+        if is_small_structure:
+            snapped_x = (
+                math.floor(pos_mouse_on_map.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2
+            )
+            snapped_y = (
+                math.floor(pos_mouse_on_map.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2
+            )
+        else:
+            snapped_x = round(pos_mouse_on_map.x / TILE_SIZE) * TILE_SIZE
+            snapped_y = round(pos_mouse_on_map.y / TILE_SIZE) * TILE_SIZE
+
+        pos_mouse_on_map = pygame.math.Vector2(snapped_x, snapped_y)
+
         return pos_mouse_on_map
 
     def update(self, dt):
-        self.pos = self.get_pos_mouse_on_map()
+        self.pos = self.snap_to_grid_on_map()
         self.rect = self.image.get_rect(center=self.pos)
 
 
