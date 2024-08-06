@@ -173,9 +173,21 @@ class Player(pygame.sprite.Sprite):
         if self.is_creating_entity:
             if self.sample_entity_image is None:
                 pos_mouse_on_map = self.get_pos_mouse_on_map()
-                sample_entity_surf = pygame.image.load(ASSET_PATH_UI_ENTITIES + self.selected_entity + ".png").convert_alpha()
+                first_dash_position = self.selected_entity.find("-")
+                entity_name = self.selected_entity[first_dash_position + 1 :]
+                path_base = ""
+
+                # entity type
+                entity_type = self.get_entity_type()
+
+                if entity_type == ENTITY_TYPE_DEFENSE:
+                    path_base = ASSET_PATH_ENTITIES + entity_name +  "/" + entity_name + "-t1-base.png"
+                else:
+                    path_base = ASSET_PATH_ENTITIES + entity_name + "/base/" + entity_name + "-t1-base.png"
+
+                sample_entity_surf = pygame.image.load(path_base).convert_alpha()
                 sample_entity_surf.set_alpha(100)
-                
+
                 self.sample_entity_image = Sample_Entity(
                     pos=pos_mouse_on_map,
                     surf=sample_entity_surf,
@@ -338,16 +350,11 @@ class Player(pygame.sprite.Sprite):
         path_base = ""
 
         # entity type
-        entity_type = ENTITY_TYPE_ATTACK
+        entity_type = self.get_entity_type()
 
-        if self.selected_entity == ENTITIES_WALL or self.selected_entity == ENTITIES_DOOR or self.selected_entity == ENTITIES_SLOW_TRAP:
-            entity_type = ENTITY_TYPE_DEFENSE
+        if entity_type == ENTITY_TYPE_DEFENSE:
             path_base = ASSET_PATH_ENTITIES + entity_name +  "/" + entity_name + "-t1-base.png"
-        elif self.selected_entity == ENTITIES_GOLD_MINE or self.selected_entity == ENTITIES_GOLD_STASH:
-            entity_type = ENTITY_TYPE_PRODUCE
-            path_base = ASSET_PATH_ENTITIES + entity_name + "/base/" + entity_name + "-t1-base.png"
         else:
-            entity_type = ENTITY_TYPE_ATTACK
             path_base = ASSET_PATH_ENTITIES + entity_name + "/base/" + entity_name + "-t1-base.png"
         
         # create
@@ -366,6 +373,16 @@ class Player(pygame.sprite.Sprite):
         self.offset.y = self.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
         pos_mouse_on_map = pos_mouse_on_screen + self.offset
         return pos_mouse_on_map
+
+    def get_entity_type(self):
+        entity_type = ENTITY_TYPE_ATTACK
+        if self.selected_entity == ENTITIES_WALL or self.selected_entity == ENTITIES_DOOR or self.selected_entity == ENTITIES_SLOW_TRAP:
+            entity_type = ENTITY_TYPE_DEFENSE
+        elif self.selected_entity == ENTITIES_GOLD_MINE or self.selected_entity == ENTITIES_GOLD_STASH:
+            entity_type = ENTITY_TYPE_PRODUCE
+        else:
+            entity_type = ENTITY_TYPE_ATTACK
+        return entity_type
 
     def get_target_pos(self):
         mouse_direction = self.calculate_current_angle()

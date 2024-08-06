@@ -4,6 +4,7 @@ from settings import *
 from game_stats import *
 from asset_path import *
 
+
 class Generic(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
         super().__init__(groups)
@@ -151,12 +152,12 @@ class Sample_Entity(Generic):
         self.rect = self.image.get_rect(center=self.pos)
 
 
-class Entity(pygame.sprite.Sprite):
-    def __init__(self, pos, surf, groups, entity_type, entity_name, z=LAYERS[LAYER_ENTITY]):
-        super().__init__(groups)
-        self.image = surf
+class Entity(Generic):
+    def __init__(
+        self, pos, surf, groups, entity_type, entity_name, z=LAYERS[LAYER_ENTITY_BASE]
+    ):
+        super().__init__(pos, surf, groups, z)
         self.rect = self.image.get_rect(center=pos)
-        self.z = z
         self.hitbox = self.rect.copy().inflate(
             (-self.rect.width // 7, -self.rect.height // 7)
         )
@@ -164,42 +165,45 @@ class Entity(pygame.sprite.Sprite):
         self.entity_type = entity_type
         self.entity_head = None
 
-        if self.entity_type == ENTITY_TYPE_ATTACK or self.entity_type == ENTITY_TYPE_PRODUCE:
+        if (
+            self.entity_type == ENTITY_TYPE_ATTACK
+            or self.entity_type == ENTITY_TYPE_PRODUCE
+        ):
             head_surf = pygame.image.load(
-                ASSET_PATH_ENTITIES + entity_name + "/head/" + entity_name + "-t1-head.png"
+                ASSET_PATH_ENTITIES
+                + entity_name
+                + "/head/"
+                + entity_name
+                + "-t1-head.png"
             )
 
-            self.entity_head = Entity_Head(
-                pos=pos,
-                surf= head_surf,
-                groups=groups)
-        
+            self.entity_head = Entity_Head(pos=pos, surf=head_surf, groups=groups)
+
     def update(self, dt):
         if not self.entity_head is None:
-            self.entity_head.update(dt) 
-    
-    
+            self.entity_head.update(dt)
 
-class Entity_Head(pygame.sprite.Sprite):
-    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
-        super().__init__(groups)
+
+class Entity_Head(Generic):
+    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_ENTITY_HEAD]):
+        super().__init__(pos, surf, groups, z)
         self.default_image = surf
-        self.image = surf
         self.rect = self.image.get_rect(center=pos)
-        self.z = z
         #
         self.current_angle = 0
 
     def update(self, dt):
         self.current_angle = self.calculate_current_angle()
-        self.image = pygame.transform.rotozoom(self.default_image, self.current_angle, 1)
+        self.image = pygame.transform.rotozoom(
+            self.default_image, self.current_angle, 1
+        )
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def calculate_current_angle(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
         center_x, center_y = SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
-        
+
         dx = mouse_x - center_x
         dy = mouse_y - center_y
 
@@ -211,28 +215,29 @@ class Entity_Head(pygame.sprite.Sprite):
         if angle_degrees < 0:
             angle_degrees += 360
         return angle_degrees
-    
-class Entity_Projectile(pygame.sprite.Sprite):
-    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
-        super().__init__(groups)
+
+
+class Entity_Projectile(Generic):
+    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_ENTITY_PROJECTILE]):
+        super().__init__(pos, surf, groups, z)
         self.default_image = surf
-        self.image = surf
         self.rect = self.image.get_rect(center=pos)
-        self.z = z
 
         # attack, defend, produce
         self.current_angle = 0
 
     def update(self, dt):
         self.current_angle = self.calculate_current_angle()
-        self.image = pygame.transform.rotozoom(self.default_image, self.current_angle, 1)
+        self.image = pygame.transform.rotozoom(
+            self.default_image, self.current_angle, 1
+        )
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def calculate_current_angle(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
         center_x, center_y = SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
-        
+
         dx = mouse_x - center_x
         dy = mouse_y - center_y
 
