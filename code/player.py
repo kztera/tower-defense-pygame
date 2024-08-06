@@ -5,7 +5,7 @@ from support import *
 from timeCounter import Timer
 from asset_path import *
 from game_stats import *
-from sprites import Entity
+from sprites import Entity,Sample_Entity
 
 
 class Player(pygame.sprite.Sprite):
@@ -87,9 +87,10 @@ class Player(pygame.sprite.Sprite):
             ITEM_TOKEN: 0,
         }
 
-        # handle create tower
+        # handle create entities
         self.entity_sprites = entity_sprites
         self.is_creating_entity = False
+        self.sample_entity_image = None
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -165,15 +166,30 @@ class Player(pygame.sprite.Sprite):
             self.selected_tool = self.tools[self.tool_index]
             changing_tool = False
             self.is_creating_entity = False
+            self.all_sprites.remove(self.sample_entity_image)
+            self.sample_entity_image = None
 
-        # use tower
+        # use entity
         if self.is_creating_entity:
+            if self.sample_entity_image is None:
+                pos_mouse_on_map = self.get_pos_mouse_on_map()
+                sample_entity_surf = pygame.image.load(ASSET_PATH_UI_ENTITIES + self.selected_entity + ".png").convert_alpha()
+                sample_entity_surf.set_alpha(100)
+                
+                self.sample_entity_image = Sample_Entity(
+                    pos=pos_mouse_on_map,
+                    surf=sample_entity_surf,
+                    groups=self.all_sprites,
+                    player=self)
+
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.timers[ENTITY_USE_TIMER].activate()
                     self.create_entity()
+        else:
+            self.sample_entity_image = None
 
-        # change tower
+        # change entity
         if not self.timers[ENTITY_SWITCH_TIMER].active:
             change = True
             if keys[pygame.K_1]:
@@ -200,7 +216,10 @@ class Player(pygame.sprite.Sprite):
             if change:
                 self.timers[ENTITY_SWITCH_TIMER].activate()
                 self.selected_entity = self.entities[self.entity_index]
+                self.all_sprites.remove(self.sample_entity_image)
+                self.sample_entity_image = None
                 self.is_creating_entity = True
+
 
     def collision(self, direction):
         for sprite in self.collision_sprites:
@@ -312,11 +331,7 @@ class Player(pygame.sprite.Sprite):
         return
 
     def create_entity(self):
-        pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
-        self.offset = pygame.math.Vector2()
-        self.offset.x = self.rect.centerx - SCREEN_WIDTH_DEFAULT / 2
-        self.offset.y = self.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
-        pos_mouse_on_map = pos_mouse_on_screen + self.offset
+        pos_mouse_on_map = self.get_pos_mouse_on_map()
 
         first_dash_position = self.selected_entity.find("-")
         entity_name = self.selected_entity[first_dash_position + 1 :]
@@ -335,13 +350,22 @@ class Player(pygame.sprite.Sprite):
             entity_type = ENTITY_TYPE_ATTACK
             path_base = ASSET_PATH_ENTITIES + entity_name + "/base/" + entity_name + "-t1-base.png"
         
+        # create
         new_entity = Entity(
             pos=pos_mouse_on_map,
             surf=pygame.image.load(path_base),
-            groups=[self.all_sprites, self.collision_sprites],
+            groups=[self.all_sprites, self.collision_sprites, self.entity_sprites],
             entity_type=entity_type,
             entity_name=entity_name
         )
+
+    def get_pos_mouse_on_map(self):
+        pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
+        self.offset = pygame.math.Vector2()
+        self.offset.x = self.rect.centerx - SCREEN_WIDTH_DEFAULT / 2
+        self.offset.y = self.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
+        pos_mouse_on_map = pos_mouse_on_screen + self.offset
+        return pos_mouse_on_map
 
     def get_target_pos(self):
         mouse_direction = self.calculate_current_angle()

@@ -18,16 +18,18 @@ class Generic(pygame.sprite.Sprite):
 class Stone(Generic):
     def __init__(self, pos, surf, groups, player_add, z=LAYERS[LAYER_STONE]):
         super().__init__(pos, surf, groups, z)
+        self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.copy().inflate(
             (-self.rect.width // 3, -self.rect.height // 3)
         )
         # add item player
         self.player_add = player_add
+
         # handle damage
         self.taking_damage = False
         self.moving_target = False
         self.diection_of_damage = pygame.math.Vector2()
-        self.start_pos = pygame.math.Vector2()
+        self.start_pos = pygame.math.Vector2(self.rect.center)
         self.end_pos = pygame.math.Vector2()
         self.timer = 0
 
@@ -74,6 +76,7 @@ class Stone(Generic):
 class Tree(Generic):
     def __init__(self, pos, surf, groups, player_add, z=LAYERS[LAYER_TREE]):
         super().__init__(pos, surf, groups, z)
+        self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.copy().inflate(
             (-self.rect.width // 10, -self.rect.height // 10)
         )
@@ -127,6 +130,27 @@ class Tree(Generic):
                     self.taking_damage = False
 
 
+class Sample_Entity(Generic):
+    def __init__(self, pos, surf, groups, player, z=LAYERS[LAYER_MAIN]):
+        super().__init__(pos, surf, groups, z)
+        self.pos = pos
+        self.rect = self.image.get_rect(center=pos)
+        self.hitbox = None
+        self.player = player
+
+    def get_pos_mouse_on_map(self):
+        pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
+        self.offset = pygame.math.Vector2()
+        self.offset.x = self.player.rect.centerx - SCREEN_WIDTH_DEFAULT / 2
+        self.offset.y = self.player.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
+        pos_mouse_on_map = pos_mouse_on_screen + self.offset
+        return pos_mouse_on_map
+
+    def update(self, dt):
+        self.pos = self.get_pos_mouse_on_map()
+        self.rect = self.image.get_rect(center=self.pos)
+
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups, entity_type, entity_name, z=LAYERS[LAYER_ENTITY]):
         super().__init__(groups)
@@ -138,21 +162,22 @@ class Entity(pygame.sprite.Sprite):
         )
 
         self.entity_type = entity_type
-        self.tower = None
+        self.entity_head = None
 
         if self.entity_type == ENTITY_TYPE_ATTACK or self.entity_type == ENTITY_TYPE_PRODUCE:
             head_surf = pygame.image.load(
                 ASSET_PATH_ENTITIES + entity_name + "/head/" + entity_name + "-t1-head.png"
             )
 
-            self.tower = Entity_Head(
+            self.entity_head = Entity_Head(
                 pos=pos,
                 surf= head_surf,
                 groups=groups)
         
     def update(self, dt):
-        if not self.tower is None:
-            self.tower.update(dt) 
+        if not self.entity_head is None:
+            self.entity_head.update(dt) 
+    
     
 
 class Entity_Head(pygame.sprite.Sprite):
