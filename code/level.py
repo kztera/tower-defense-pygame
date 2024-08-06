@@ -5,7 +5,7 @@ from pytmx.util_pygame import load_pygame
 
 from player import Player
 from overlay import Overlay
-from sprites import Generic, Stone, Tree, Tower
+from sprites import Generic, Stone, Tree
 
 class Level:
     def __init__(self):

@@ -1,7 +1,8 @@
 import pygame
+import math
 from settings import *
 from game_stats import *
-
+from asset_path import *
 
 class Generic(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
@@ -126,14 +127,95 @@ class Tree(Generic):
                     self.taking_damage = False
 
 
-class Tower(pygame.sprite.Sprite):
-    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_TOWER]):
+class Entity(pygame.sprite.Sprite):
+    def __init__(self, pos, surf, groups, entity_type, entity_name, z=LAYERS[LAYER_ENTITY]):
         super().__init__(groups)
         self.image = surf
         self.rect = self.image.get_rect(center=pos)
         self.z = z
-        # self.hitbox = self.rect.copy().inflate(
-            # (-self.rect.width // 5, -self.rect.height // 5)
-        #)
+        self.hitbox = self.rect.copy().inflate(
+            (-self.rect.width // 7, -self.rect.height // 7)
+        )
 
-        print("Create success")
+        self.entity_type = entity_type
+        self.tower = None
+
+        if self.entity_type == ENTITY_TYPE_ATTACK or self.entity_type == ENTITY_TYPE_PRODUCE:
+            head_surf = pygame.image.load(
+                ASSET_PATH_ENTITIES + entity_name + "/head/" + entity_name + "-t1-head.png"
+            )
+
+            self.tower = Entity_Head(
+                pos=pos,
+                surf= head_surf,
+                groups=groups)
+        
+    def update(self, dt):
+        if not self.tower is None:
+            self.tower.update(dt) 
+    
+
+class Entity_Head(pygame.sprite.Sprite):
+    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
+        super().__init__(groups)
+        self.default_image = surf
+        self.image = surf
+        self.rect = self.image.get_rect(center=pos)
+        self.z = z
+        #
+        self.current_angle = 0
+
+    def update(self, dt):
+        self.current_angle = self.calculate_current_angle()
+        self.image = pygame.transform.rotozoom(self.default_image, self.current_angle, 1)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def calculate_current_angle(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        center_x, center_y = SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
+        
+        dx = mouse_x - center_x
+        dy = mouse_y - center_y
+
+        angle_radians = math.atan2(dy, dx)
+        angle_degrees = math.degrees(angle_radians)
+
+        angle_degrees = (-angle_degrees - 180) % 360
+
+        if angle_degrees < 0:
+            angle_degrees += 360
+        return angle_degrees
+    
+class Entity_Projectile(pygame.sprite.Sprite):
+    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
+        super().__init__(groups)
+        self.default_image = surf
+        self.image = surf
+        self.rect = self.image.get_rect(center=pos)
+        self.z = z
+
+        # attack, defend, produce
+        self.current_angle = 0
+
+    def update(self, dt):
+        self.current_angle = self.calculate_current_angle()
+        self.image = pygame.transform.rotozoom(self.default_image, self.current_angle, 1)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def calculate_current_angle(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        center_x, center_y = SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
+        
+        dx = mouse_x - center_x
+        dy = mouse_y - center_y
+
+        angle_radians = math.atan2(dy, dx)
+        angle_degrees = math.degrees(angle_radians)
+
+        angle_degrees = (-angle_degrees - 180) % 360
+
+        if angle_degrees < 0:
+            angle_degrees += 360
+        return angle_degrees

@@ -25,7 +25,6 @@ ENTITIES_MAGE_TOWER = "entities-mage-tower"
 ENTITIES_MELEE_TOWER = "entities-melee-tower"
 ENTITIES_GOLD_MINE = "entities-gold-mine"
 ENTITIES_GOLD_STASH = "entities-gold-stash"
-ENTITIES_HARVESTER = "entities-harvester"
 ENTITIES_SLOW_TRAP = "entities-slow-trap"
 ENTITIES_WALL = "entities-wall"
 ENTITIES_DOOR = "entities-door"
@@ -35,6 +34,10 @@ ENTITY_SWITCH_TIMER = "entity switch"
 
 TIME_FOR_ENTITY = 350
 TIME_FOR_ENTITY_SWITCH = 200
+
+ENTITY_TYPE_ATTACK = "attack"
+ENTITY_TYPE_DEFENSE = "defense"
+ENTITY_TYPE_PRODUCE = "produce"
 
 # inventory
 ITEM_WOOD = "wood"

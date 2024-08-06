@@ -5,13 +5,17 @@ from support import *
 from timeCounter import Timer
 from asset_path import *
 from game_stats import *
-from sprites import Tower
+from sprites import Entity
+
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, group, collision_sprites, tree_sprites, stone_sprites, entity_sprites):
+    def __init__(
+        self, pos, group, collision_sprites, tree_sprites, stone_sprites, entity_sprites
+    ):
         super().__init__(group)
 
-        self.all_group = group
+        self.all_sprites = group
+        self.collision_sprites = collision_sprites
         self.current_wave = 0
 
         # general setup
@@ -55,7 +59,6 @@ class Player(pygame.sprite.Sprite):
             ENTITIES_CANNON_TOWER,
             ENTITIES_MAGE_TOWER,
             ENTITIES_MELEE_TOWER,
-            ENTITIES_HARVESTER,
             ENTITIES_GOLD_MINE,
             ENTITIES_GOLD_STASH,
         ]
@@ -86,7 +89,7 @@ class Player(pygame.sprite.Sprite):
 
         # handle create tower
         self.entity_sprites = entity_sprites
-        self.is_creating_tower = False
+        self.is_creating_entity = False
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -161,15 +164,15 @@ class Player(pygame.sprite.Sprite):
             )
             self.selected_tool = self.tools[self.tool_index]
             changing_tool = False
-            self.is_creating_tower = False
+            self.is_creating_entity = False
 
         # use tower
-        if self.is_creating_tower:
+        if self.is_creating_entity:
             for event in events:
-                if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.timers[ENTITY_USE_TIMER].activate()
-                    self.create_tower()
-        
+                    self.create_entity()
+
         # change tower
         if not self.timers[ENTITY_SWITCH_TIMER].active:
             change = True
@@ -191,15 +194,13 @@ class Player(pygame.sprite.Sprite):
                 self.entity_index = 7
             elif keys[pygame.K_9]:
                 self.entity_index = 8
-            elif keys[pygame.K_0]:
-                self.entity_index = 9
             else:
                 change = False
 
             if change:
                 self.timers[ENTITY_SWITCH_TIMER].activate()
                 self.selected_entity = self.entities[self.entity_index]
-                self.is_creating_tower = True
+                self.is_creating_entity = True
 
     def collision(self, direction):
         for sprite in self.collision_sprites:
@@ -309,24 +310,38 @@ class Player(pygame.sprite.Sprite):
     def use_entity(self):
         # print(self.selected_entity)
         return
-    
-    def create_tower(self):
-        pos = pygame.mouse.get_pos()
 
-        first_dash_position = self.selected_entity.find('-')
-        type_entity = self.selected_entity[first_dash_position + 1:]
-        # base_surf = pygame.image.load(ASSET_PATH_ENTITIES + type_entity +"/base/" + type_entity + "-t1-base.png").convert_alpha()
-        base_surf = pygame.image.load(ASSET_PATH_ENTITIES).convert_alpha()
+    def create_entity(self):
+        pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
+        self.offset = pygame.math.Vector2()
+        self.offset.x = self.rect.centerx - SCREEN_WIDTH_DEFAULT / 2
+        self.offset.y = self.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
+        pos_mouse_on_map = pos_mouse_on_screen + self.offset
+
+        first_dash_position = self.selected_entity.find("-")
+        entity_name = self.selected_entity[first_dash_position + 1 :]
+        path_base = ""
+
+        # entity type
+        entity_type = ENTITY_TYPE_ATTACK
+
+        if self.selected_entity == ENTITIES_WALL or self.selected_entity == ENTITIES_DOOR or self.selected_entity == ENTITIES_SLOW_TRAP:
+            entity_type = ENTITY_TYPE_DEFENSE
+            path_base = ASSET_PATH_ENTITIES + entity_name +  "/" + entity_name + "-t1-base.png"
+        elif self.selected_entity == ENTITIES_GOLD_MINE or self.selected_entity == ENTITIES_GOLD_STASH:
+            entity_type = ENTITY_TYPE_PRODUCE
+            path_base = ASSET_PATH_ENTITIES + entity_name + "/base/" + entity_name + "-t1-base.png"
+        else:
+            entity_type = ENTITY_TYPE_ATTACK
+            path_base = ASSET_PATH_ENTITIES + entity_name + "/base/" + entity_name + "-t1-base.png"
         
-        #self.display_surface = pygame.display.get_surface()
-        tower = Tower(
-            pos = pos,
-            surf = base_surf,
-            groups = [self.all_group, self.entity_sprites],
-            z = LAYERS[LAYER_TOWER])
-        
-        self.all_group.add(tower)
-        # self.display_surface.blit(tower.image, pos)
+        new_entity = Entity(
+            pos=pos_mouse_on_map,
+            surf=pygame.image.load(path_base),
+            groups=[self.all_sprites, self.collision_sprites],
+            entity_type=entity_type,
+            entity_name=entity_name
+        )
 
     def get_target_pos(self):
         mouse_direction = self.calculate_current_angle()

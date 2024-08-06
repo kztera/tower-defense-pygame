@@ -25,5 +25,5 @@ ASSET_PATH_MAP = os.path.join(ROOT_FOLDER_PATH, "../data/map/map.tmx")
 ASSET_PATH_FONT = os.path.join(ROOT_FOLDER_PATH, "../font/")
 
 # asset path : entities
-ASSET_PATH_ENTITIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/character/body/player-base.png")
+ASSET_PATH_ENTITIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/entities/")
 

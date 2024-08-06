@@ -41,13 +41,13 @@ LAYER_PLAYER = "Player"
 LAYER_MAIN = "Main"
 LAYER_STONE = "Stones"
 LAYER_TREE = "Trees"
-LAYER_TOWER = "Tower"
+LAYER_ENTITY = "Tower"
 
 LAYERS = {
     LAYER_GROUND: 0,
     LAYER_STONE: 1,
     LAYER_TREE: 2,
     LAYER_PLAYER: 3,
-    LAYER_TOWER : 4,
+    LAYER_ENTITY: 4,
     LAYER_MAIN: 5,
 }
