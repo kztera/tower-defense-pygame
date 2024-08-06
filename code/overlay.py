@@ -106,19 +106,15 @@ class Overlay:
                 self.display_surface.blit(matte, matte_rect)
 
     def display_item_inventory(self, pos):
-        background_width = 200
-        background_height = 220
+        background_width = 150
+        background_height = 170
         padding = 10
-        margin_right = 20
-        margin_bottom = 40
-        item_height = 40
+        item_height = 30
         font_color = (200, 200, 200)
         background_color = (0, 0, 0, 120)
         background = pygame.Surface(
             (background_width, background_height), pygame.SRCALPHA
         )
-
-        pos = (pos[0] - margin_right, pos[1] - margin_bottom)
 
         pygame.draw.rect(
             background, background_color, background.get_rect(), border_radius=10
