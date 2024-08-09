@@ -232,7 +232,6 @@ class Player(pygame.sprite.Sprite):
                 self.sample_entity_image = None
                 self.is_creating_entity = True
 
-
     def collision(self, direction):
         for sprite in self.collision_sprites:
             if hasattr(sprite, "hitbox"):

@@ -1,6 +1,7 @@
 import pygame
 import math
 from settings import *
+from settings import *
 from game_stats import *
 from asset_path import *
 
@@ -161,14 +162,11 @@ class Entity(Generic):
         self.hitbox = self.rect.copy().inflate(
             (-self.rect.width // 7, -self.rect.height // 7)
         )
-
-        self.entity_type = entity_type
         self.entity_head = None
 
-        if (
-            self.entity_type == ENTITY_TYPE_ATTACK
-            or self.entity_type == ENTITY_TYPE_PRODUCE
-        ):
+        if entity_type == ENTITY_TYPE_DEFENSE:
+            return
+        else:
             head_surf = pygame.image.load(
                 ASSET_PATH_ENTITIES
                 + entity_name
@@ -176,28 +174,45 @@ class Entity(Generic):
                 + entity_name
                 + "-t1-head.png"
             )
-
-            self.entity_head = Entity_Head(pos=pos, surf=head_surf, groups=groups)
-
-    def update(self, dt):
-        if not self.entity_head is None:
-            self.entity_head.update(dt)
+            self.entity_head = Entity_Head(
+                pos=pos,
+                surf=head_surf,
+                groups=groups,
+                entity_type=entity_type,
+                entity_name=entity_name,
+            )
 
 
 class Entity_Head(Generic):
-    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_ENTITY_HEAD]):
+    def __init__(
+        self, pos, surf, groups, entity_type, entity_name, z=LAYERS[LAYER_ENTITY_HEAD]
+    ):
         super().__init__(pos, surf, groups, z)
-        self.default_image = surf
         self.rect = self.image.get_rect(center=pos)
-        #
-        self.current_angle = 0
-
-    def update(self, dt):
-        self.current_angle = self.calculate_current_angle()
-        self.image = pygame.transform.rotozoom(
-            self.default_image, self.current_angle, 1
+        self.hitbox = self.rect.copy().inflate(
+            (-self.rect.width // 7, -self.rect.height // 7)
         )
-        self.rect = self.image.get_rect(center=self.rect.center)
+        self.default_image = surf
+        self.pos = pos
+        self.groups = groups
+        self.current_angle = 0
+        #
+        self.can_attack = entity_type == ENTITY_TYPE_ATTACK
+        self.creating_entity_projectile = False
+        self.direction = pygame.math.Vector2()
+        self.attack_cooldown = 1
+        self.timer = 0.0
+
+        self.projectile_surf = None
+
+        if self.can_attack:
+            self.projectile_surf = pygame.image.load(
+                ASSET_PATH_ENTITIES
+                + entity_name
+                + "/projectile/"
+                + entity_name
+                + "-projectile.png"
+            )
 
     def calculate_current_angle(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -215,19 +230,67 @@ class Entity_Head(Generic):
         if angle_degrees < 0:
             angle_degrees += 360
         return angle_degrees
+
+    def update_angle(self):
+        self.current_angle = self.calculate_current_angle()
+        self.image = pygame.transform.rotozoom(
+            self.default_image, self.current_angle, 1
+        )
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def create_entity_projectile(self):
+        Entity_Projectile(
+            pos=pygame.math.Vector2(self.rect.center),
+            surf=self.projectile_surf,
+            groups=self.groups,
+            angle=self.current_angle,
+        )
+
+    def update(self, dt):
+        self.update_angle()
+
+        if self.can_attack:
+            self.timer += dt
+            if self.timer >= self.attack_cooldown:
+                self.create_entity_projectile()
+                self.timer = 0
+                print("Attack")
 
 
 class Entity_Projectile(Generic):
-    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_ENTITY_PROJECTILE]):
+    def __init__(self, pos, surf, groups, angle, z=LAYERS[LAYER_ENTITY_PROJECTILE]):
         super().__init__(pos, surf, groups, z)
-        self.default_image = surf
         self.rect = self.image.get_rect(center=pos)
+        self.hitbox = self.rect.copy().inflate(
+            (-self.rect.width // 7, -self.rect.height // 7)
+        )
+        self.default_image = surf
+        self.pos = pos
+        self.current_angle = angle
+        self.direction = pygame.math.Vector2()
+        self.speed = 50
 
-        # attack, defend, produce
-        self.current_angle = 0
+        self.image = pygame.transform.rotozoom(
+            self.default_image, self.current_angle, 1
+        )
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+        # test
+        self.direction.x = -1
+
+    def movement(self, dt):
+        self.pos.x += self.direction.x * self.speed * dt
+        self.hitbox.centerx = round(self.pos.x)
+        self.rect.centerx = self.hitbox.centerx
+
+        self.pos.y += self.direction.y * self.speed * dt
+        self.hitbox.centery = round(self.pos.y)
+        self.rect.centery = self.hitbox.centery
 
     def update(self, dt):
-        self.current_angle = self.calculate_current_angle()
+        self.movement(dt)
+
+        """self.current_angle = self.calculate_current_angle()
         self.image = pygame.transform.rotozoom(
             self.default_image, self.current_angle, 1
         )
@@ -248,4 +311,49 @@ class Entity_Projectile(Generic):
 
         if angle_degrees < 0:
             angle_degrees += 360
+        return angle_degrees"""
+
+
+# ZOMBIE
+
+
+class Zombie(Generic):
+    def __init__(self, pos, surf, groups, player, z=LAYERS[LAYER_ZOMBIE]):
+        super().__init__(pos, surf, groups, z)
+        self.rect = self.image.get_rect(center=pos)
+        self.hitbox = self.rect.copy().inflate(
+            (-self.rect.width // 7, -self.rect.height // 7)
+        )
+
+        self.player = player
+        self.default_image = surf
+        self.pos = pos
+        self.current_angle = 0
+
+    def calculate_current_angle(self):
+        dx = self.player.pos.x - self.pos.x
+        dy = self.player.pos.y - self.pos.y
+
+        print(self.player.pos)
+        print(self.rect.center)
+
+        angle_radians = math.atan2(dy, dx)
+
+        angle_degrees = math.degrees(angle_radians)
+
+        angle_degrees = (-angle_degrees - 180) % 360
+
+        if angle_degrees < 0:
+            angle_degrees += 360
         return angle_degrees
+
+    def update_angle(self):
+        self.current_angle = self.calculate_current_angle()
+        print(self.current_angle)
+        self.image = pygame.transform.rotozoom(
+            self.default_image, self.current_angle, 1
+        )
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def update(self, dt):
+        self.update_angle()

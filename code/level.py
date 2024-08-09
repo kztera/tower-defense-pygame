@@ -5,7 +5,7 @@ from pytmx.util_pygame import load_pygame
 
 from player import Player
 from overlay import Overlay
-from sprites import Generic, Stone, Tree
+from sprites import Generic, Stone, Tree, Zombie
 
 class Level:
     def __init__(self):
@@ -19,6 +19,12 @@ class Level:
         self.tree_sprites = pygame.sprite.Group()
         self.stone_sprites = pygame.sprite.Group()
         self.entity_sprites = pygame.sprite.Group()
+        self.zombie_sprites = pygame.sprite.Group()
+
+        #
+        self.spawning_zombie = False
+        self.timer = 0.0
+        self.spawnTime = 2
 
         # setup
         self.setup()
@@ -70,11 +76,24 @@ class Level:
     def player_add(self, item):
         self.player.items_inventory[item] += 1
 
+    def spawn_zombie(self, dt):
+        self.timer += dt
+        if self.timer > self.spawnTime and self.spawning_zombie == False:
+            Zombie(pos=self.player.pos, 
+                   surf=pygame.image.load(ASSET_PATH_ZOMBIES),
+                   groups= [self.all_sprites, self.collision_sprites, self.zombie_sprites],
+                   player=self.player
+                   )
+            self.timer = 0.0
+            self.spawning_zombie = True
+            print("Spawn Zombie")
+
     def run(self, dt):
         self.display_surface.fill("black")
         self.all_sprites.custom_draw(self.player)
         self.all_sprites.update(dt)
 
+        self.spawn_zombie(dt)
         self.overlay.display()
         # print(self.player.items_inventory)
 
