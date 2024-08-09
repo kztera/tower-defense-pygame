@@ -7,6 +7,7 @@ from player import Player
 from overlay import Overlay
 from sprites import Generic, Stone, Tree, Zombie
 
+
 class Level:
     def __init__(self):
 
@@ -62,7 +63,7 @@ class Level:
                     collision_sprites=self.collision_sprites,
                     tree_sprites=self.tree_sprites,
                     stone_sprites=self.stone_sprites,
-                    entity_sprites = self.entity_sprites
+                    entity_sprites=self.entity_sprites,
                 )
 
         # create ground
@@ -96,6 +97,7 @@ class Level:
         self.spawn_zombie(dt)
         self.overlay.display()
         # print(self.player.items_inventory)
+
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):

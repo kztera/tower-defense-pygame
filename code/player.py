@@ -5,7 +5,7 @@ from support import *
 from timeCounter import Timer
 from asset_path import *
 from game_stats import *
-from sprites import Entity,Sample_Entity
+from sprites import Entity, Sample_Entity
 
 
 class Player(pygame.sprite.Sprite):
@@ -13,6 +13,9 @@ class Player(pygame.sprite.Sprite):
         self, pos, group, collision_sprites, tree_sprites, stone_sprites, entity_sprites
     ):
         super().__init__(group)
+
+        self.screen_width = pygame.display.get_surface().get_width()
+        self.screen_height = pygame.display.get_surface().get_height()
 
         self.all_sprites = group
         self.collision_sprites = collision_sprites
@@ -172,7 +175,7 @@ class Player(pygame.sprite.Sprite):
         # use entity
         if self.is_creating_entity:
             if self.sample_entity_image is None:
-                pos_mouse_on_map = self.get_pos_mouse_on_map()
+                pos_mouse_on_map = self.snap_to_grid_on_map()
                 first_dash_position = self.selected_entity.find("-")
                 entity_name = self.selected_entity[first_dash_position + 1 :]
                 path_base = ""
@@ -181,9 +184,21 @@ class Player(pygame.sprite.Sprite):
                 entity_type = self.get_entity_type()
 
                 if entity_type == ENTITY_TYPE_DEFENSE:
-                    path_base = ASSET_PATH_ENTITIES + entity_name +  "/" + entity_name + "-t1-base.png"
+                    path_base = (
+                        ASSET_PATH_ENTITIES
+                        + entity_name
+                        + "/"
+                        + entity_name
+                        + "-t1-base.png"
+                    )
                 else:
-                    path_base = ASSET_PATH_ENTITIES + entity_name + "/base/" + entity_name + "-t1-base.png"
+                    path_base = (
+                        ASSET_PATH_ENTITIES
+                        + entity_name
+                        + "/base/"
+                        + entity_name
+                        + "-t1-base.png"
+                    )
 
                 sample_entity_surf = pygame.image.load(path_base).convert_alpha()
                 sample_entity_surf.set_alpha(100)
@@ -192,7 +207,8 @@ class Player(pygame.sprite.Sprite):
                     pos=pos_mouse_on_map,
                     surf=sample_entity_surf,
                     groups=self.all_sprites,
-                    player=self)
+                    player=self,
+                )
 
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -258,13 +274,13 @@ class Player(pygame.sprite.Sprite):
 
         # horizontal movement
         self.pos.x += self.direction.x * self.speed * dt
-        self.hitbox.centerx = round(self.pos.x)
+        self.hitbox.centerx = math.floor(self.pos.x)
         self.rect.centerx = self.hitbox.centerx
         self.collision("horizontal")
 
         # vertical movement
         self.pos.y += self.direction.y * self.speed * dt
-        self.hitbox.centery = round(self.pos.y)
+        self.hitbox.centery = math.floor(self.pos.y)
         self.rect.centery = self.hitbox.centery
         self.collision("vertical")
 
@@ -302,7 +318,7 @@ class Player(pygame.sprite.Sprite):
     def calculate_current_angle(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        center_x, center_y = SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
+        center_x, center_y = self.screen_width / 2, self.screen_height / 2
         dx = mouse_x - center_x
         dy = mouse_y - center_y
 
@@ -342,7 +358,7 @@ class Player(pygame.sprite.Sprite):
         return
 
     def create_entity(self):
-        pos_mouse_on_map = self.get_pos_mouse_on_map()
+        pos_mouse_on_map = self.snap_to_grid_on_map()
 
         first_dash_position = self.selected_entity.find("-")
         entity_name = self.selected_entity[first_dash_position + 1 :]
@@ -352,32 +368,67 @@ class Player(pygame.sprite.Sprite):
         entity_type = self.get_entity_type()
 
         if entity_type == ENTITY_TYPE_DEFENSE:
-            path_base = ASSET_PATH_ENTITIES + entity_name +  "/" + entity_name + "-t1-base.png"
+            path_base = (
+                ASSET_PATH_ENTITIES + entity_name + "/" + entity_name + "-t1-base.png"
+            )
         else:
-            path_base = ASSET_PATH_ENTITIES + entity_name + "/base/" + entity_name + "-t1-base.png"
-        
+            path_base = (
+                ASSET_PATH_ENTITIES
+                + entity_name
+                + "/base/"
+                + entity_name
+                + "-t1-base.png"
+            )
+
         # create
         new_entity = Entity(
             pos=pos_mouse_on_map,
             surf=pygame.image.load(path_base),
             groups=[self.all_sprites, self.collision_sprites, self.entity_sprites],
             entity_type=entity_type,
-            entity_name=entity_name
+            entity_name=entity_name,
         )
 
-    def get_pos_mouse_on_map(self):
+    def snap_to_grid_on_map(self):
         pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
         self.offset = pygame.math.Vector2()
-        self.offset.x = self.rect.centerx - SCREEN_WIDTH_DEFAULT / 2
-        self.offset.y = self.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
+        self.offset.x = self.rect.centerx - self.screen_width / 2
+        self.offset.y = self.rect.centery - self.screen_height / 2
         pos_mouse_on_map = pos_mouse_on_screen + self.offset
+
+        is_small_structure = self.selected_entity in [
+            ENTITIES_WALL,
+            ENTITIES_DOOR,
+            ENTITIES_SLOW_TRAP,
+        ]
+
+        if is_small_structure:
+            snapped_x = (
+                math.floor(pos_mouse_on_map.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2
+            )
+            snapped_y = (
+                math.floor(pos_mouse_on_map.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2
+            )
+        else:
+            snapped_x = round(pos_mouse_on_map.x / TILE_SIZE) * TILE_SIZE
+            snapped_y = round(pos_mouse_on_map.y / TILE_SIZE) * TILE_SIZE
+
+        pos_mouse_on_map = pygame.math.Vector2(snapped_x, snapped_y)
+
         return pos_mouse_on_map
 
     def get_entity_type(self):
         entity_type = ENTITY_TYPE_ATTACK
-        if self.selected_entity == ENTITIES_WALL or self.selected_entity == ENTITIES_DOOR or self.selected_entity == ENTITIES_SLOW_TRAP:
+        if (
+            self.selected_entity == ENTITIES_WALL
+            or self.selected_entity == ENTITIES_DOOR
+            or self.selected_entity == ENTITIES_SLOW_TRAP
+        ):
             entity_type = ENTITY_TYPE_DEFENSE
-        elif self.selected_entity == ENTITIES_GOLD_MINE or self.selected_entity == ENTITIES_GOLD_STASH:
+        elif (
+            self.selected_entity == ENTITIES_GOLD_MINE
+            or self.selected_entity == ENTITIES_GOLD_STASH
+        ):
             entity_type = ENTITY_TYPE_PRODUCE
         else:
             entity_type = ENTITY_TYPE_ATTACK
@@ -410,6 +461,8 @@ class Player(pygame.sprite.Sprite):
             timer.update()
 
     def update(self, dt):
+        self.screen_height = pygame.display.get_surface().get_height()
+        self.screen_width = pygame.display.get_surface().get_width()
         self.input()
         self.update_timers()
 
