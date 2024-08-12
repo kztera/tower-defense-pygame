@@ -1,7 +1,6 @@
 import pygame
 import math
 from settings import *
-from settings import *
 from game_stats import *
 from asset_path import *
 
@@ -175,13 +174,22 @@ class Sample_Entity(Generic):
 
 class Entity(Generic):
     def __init__(
-        self, pos, surf, groups, entity_type, entity_name, z=LAYERS[LAYER_ENTITY_BASE]
+        self,
+        pos,
+        surf,
+        groups,
+        entity_type,
+        entity_name,
+        zombie_sprites,
+        z=LAYERS[LAYER_ENTITY_BASE],
     ):
         super().__init__(pos, surf, groups, z)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate(
             (-self.rect.width // 7, -self.rect.height // 7)
         )
+
+        self.pos = pos
         self.entity_head = None
 
         if entity_type == ENTITY_TYPE_DEFENSE:
@@ -194,18 +202,27 @@ class Entity(Generic):
                 + entity_name
                 + "-t1-head.png"
             )
+
             self.entity_head = Entity_Head(
                 pos=pos,
                 surf=head_surf,
-                groups=groups,
+                groups=[groups[0]],
                 entity_type=entity_type,
                 entity_name=entity_name,
+                zombie_sprites=zombie_sprites,
             )
 
 
 class Entity_Head(Generic):
     def __init__(
-        self, pos, surf, groups, entity_type, entity_name, z=LAYERS[LAYER_ENTITY_HEAD]
+        self,
+        pos,
+        surf,
+        groups,
+        entity_type,
+        entity_name,
+        zombie_sprites,
+        z=LAYERS[LAYER_ENTITY_HEAD],
     ):
         super().__init__(pos, surf, groups, z)
         self.rect = self.image.get_rect(center=pos)
@@ -216,14 +233,34 @@ class Entity_Head(Generic):
         self.pos = pos
         self.groups = groups
         self.current_angle = 0
+        self.zombie_sprites = zombie_sprites
+        self.direction = pygame.math.Vector2()
+
         #
         self.can_attack = entity_type == ENTITY_TYPE_ATTACK
         self.creating_entity_projectile = False
-        self.direction = pygame.math.Vector2()
-        self.attack_cooldown = 1
+        self.attack_cooldown = 2
         self.timer = 0.0
+        self.range = 360
+        self.last_shot = pygame.time.get_ticks()
+        self.target = None
 
+        #
         self.projectile_surf = None
+
+        #
+        self.range_image = pygame.Surface((self.range * 2, self.range * 2))
+        self.range_image.fill((0, 0, 0))
+        self.range_image.set_colorkey((0, 0, 0))
+        pygame.draw.circle(
+            self.range_image, "grey100", (self.range, self.range), self.range
+        )
+        self.range_image.set_alpha(100)
+        self.range_rect = self.range_image.get_rect(center=self.rect.center)
+
+        draw_circle(pos=self.rect.center, surf=self.range_image, groups=groups)
+
+        #
 
         if self.can_attack:
             self.projectile_surf = pygame.image.load(
@@ -235,12 +272,10 @@ class Entity_Head(Generic):
             )
 
     def calculate_current_angle(self):
-        mouse_x, mouse_y = pygame.mouse.get_pos()
+        dx = self.target.rect.centerx - self.rect.centerx
+        dy = self.target.rect.centery - self.rect.centery
 
-        center_x, center_y = SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
-
-        dx = mouse_x - center_x
-        dy = mouse_y - center_y
+        self.direction = pygame.math.Vector2(dx, dy).normalize()
 
         angle_radians = math.atan2(dy, dx)
         angle_degrees = math.degrees(angle_radians)
@@ -251,12 +286,14 @@ class Entity_Head(Generic):
             angle_degrees += 360
         return angle_degrees
 
-    def update_angle(self):
-        self.current_angle = self.calculate_current_angle()
-        self.image = pygame.transform.rotozoom(
-            self.default_image, self.current_angle, 1
-        )
-        self.rect = self.image.get_rect(center=self.rect.center)
+    def update_direction(self):
+        if not self.target is None:
+            # angle
+            self.current_angle = self.calculate_current_angle()
+            self.image = pygame.transform.rotozoom(
+                self.default_image, self.current_angle, 1
+            )
+            self.rect = self.image.get_rect(center=self.rect.center)
 
     def create_entity_projectile(self):
         Entity_Projectile(
@@ -264,39 +301,65 @@ class Entity_Head(Generic):
             surf=self.projectile_surf,
             groups=self.groups,
             angle=self.current_angle,
+            direction=self.direction,
+            zombie_sprites=self.zombie_sprites,
         )
 
-    def update(self, dt):
-        self.update_angle()
+    def pick_tartget(self):
+        has_target = False
+        for zombie in self.zombie_sprites:
+            distance_x = zombie.rect.centerx - self.rect.centerx
+            distance_y = zombie.rect.centery - self.rect.centery
+            distance = math.sqrt(distance_x**2 + distance_y**2)
+            if distance < self.range:
+                self.target = zombie
+                has_target = True
 
-        if self.can_attack:
+        if not has_target:
+            self.target = None
+
+    def update(self, dt):
+        self.pick_tartget()
+        self.update_direction()
+
+        if self.can_attack and not self.target is None:
             self.timer += dt
             if self.timer >= self.attack_cooldown:
                 self.create_entity_projectile()
                 self.timer = 0
-                print("Attack")
 
 
 class Entity_Projectile(Generic):
-    def __init__(self, pos, surf, groups, angle, z=LAYERS[LAYER_ENTITY_PROJECTILE]):
+    def __init__(
+        self,
+        pos,
+        surf,
+        groups,
+        angle,
+        direction,
+        zombie_sprites,
+        z=LAYERS[LAYER_ENTITY_PROJECTILE],
+    ):
         super().__init__(pos, surf, groups, z)
         self.rect = self.image.get_rect(center=pos)
-        self.hitbox = self.rect.copy().inflate(
-            (-self.rect.width // 7, -self.rect.height // 7)
-        )
-        self.default_image = surf
-        self.pos = pos
-        self.current_angle = angle
-        self.direction = pygame.math.Vector2()
-        self.speed = 50
+        self.hitbox = self.rect.copy().inflate((-self.rect.width, -self.rect.height))
 
+        # movement
+        self.pos = pos
+        self.direction = direction
+        self.speed = 200
+
+        # rotation
+        self.default_image = surf
+        self.current_angle = angle
         self.image = pygame.transform.rotozoom(
             self.default_image, self.current_angle, 1
         )
         self.rect = self.image.get_rect(center=self.rect.center)
+        self.zombie_sprites = zombie_sprites
 
-        # test
-        self.direction.x = -1
+        # damage
+        self.damage = 20
 
     def movement(self, dt):
         self.pos.x += self.direction.x * self.speed * dt
@@ -307,73 +370,150 @@ class Entity_Projectile(Generic):
         self.hitbox.centery = round(self.pos.y)
         self.rect.centery = self.hitbox.centery
 
+    def cause_damage(self):
+        for zombie in self.zombie_sprites:
+            if not zombie.dead:
+                if self.rect.collidepoint(zombie.rect.center):
+                    zombie.take_damage(self.damage)
+                    self.kill()
+
     def update(self, dt):
         self.movement(dt)
+        self.cause_damage()
 
-        """self.current_angle = self.calculate_current_angle()
-        self.image = pygame.transform.rotozoom(
-            self.default_image, self.current_angle, 1
+
+class draw_circle(Generic):
+    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
+        super().__init__(pos, surf, groups[0], z)
+        self.rect = self.image.get_rect(center=pos)
+        self.hitbox = self.rect.copy().inflate(
+            (-self.rect.width // 1, -self.rect.height // 1)
         )
-        self.rect = self.image.get_rect(center=self.rect.center)
-
-    def calculate_current_angle(self):
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-
-        center_x, center_y = SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
-
-        dx = mouse_x - center_x
-        dy = mouse_y - center_y
-
-        angle_radians = math.atan2(dy, dx)
-        angle_degrees = math.degrees(angle_radians)
-
-        angle_degrees = (-angle_degrees - 180) % 360
-
-        if angle_degrees < 0:
-            angle_degrees += 360
-        return angle_degrees"""
 
 
 # ZOMBIE
+class HealthBar(pygame.sprite.Sprite):
+    def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
+        super().__init__(groups)
+        self.image = surf
+        self.rect = self.image.get_rect(topleft=pos)
+        self.z = z
 
 
 class Zombie(Generic):
-    def __init__(self, pos, surf, groups, player, z=LAYERS[LAYER_ZOMBIE]):
+    def __init__(self, pos, surf, groups, entity_sprites, z=LAYERS[LAYER_ZOMBIE]):
         super().__init__(pos, surf, groups, z)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate(
-            (-self.rect.width // 7, -self.rect.height // 7)
+            (-self.rect.width // 3, -self.rect.height // 3)
+        )
+        self.pos = pygame.math.Vector2(self.rect.center)
+        self.target = None
+
+        # movement
+        self.direction = pygame.math.Vector2()
+        self.default_image = surf
+        self.current_angle = 0
+        self.speed = 100
+
+        # damage
+        self.range = 480
+        self.entity_sprites = entity_sprites
+
+        # health
+        self.dead = False
+        self.max_health = 100
+        self.health = self.max_health
+
+        healthBar_pos = pygame.math.Vector2(self.rect.center)
+        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
+        healthBar_pos.y += 50
+
+        surface_red = pygame.Surface((HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT))
+        surface_red.fill("red")
+        self.healthBar_background = HealthBar(
+            healthBar_pos, surface_red, groups[0], z=LAYERS[LAYER_MAX_HEALTH]
         )
 
-        self.player = player
-        self.default_image = surf
-        self.pos = pos
-        self.current_angle = 0
+        ratio = self.health / self.max_health
+        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green.fill("green")
+        self.healthBar = HealthBar(
+            healthBar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEATH]
+        )
 
-    def calculate_current_angle(self):
-        dx = self.player.pos.x - self.pos.x
-        dy = self.player.pos.y - self.pos.y
+    def pick_target(self):
+        for entity in self.entity_sprites:
+            distance_x = entity.rect.centerx - self.rect.centerx
+            distance_y = entity.rect.centery - self.rect.centery
+            distance = math.sqrt(distance_x**2 + distance_y**2)
+            if distance < self.range:
+                self.target = entity
 
-        print(self.player.pos)
-        print(self.rect.center)
+    def calculate_angle(self):
+        dx = self.target.rect.centerx - self.rect.centerx
+        dy = self.target.rect.centery - self.rect.centery
+
+        self.direction = pygame.math.Vector2(dx, dy).normalize()
 
         angle_radians = math.atan2(dy, dx)
-
         angle_degrees = math.degrees(angle_radians)
 
-        angle_degrees = (-angle_degrees - 180) % 360
+        angle_degrees = (-angle_degrees - 90) % 360
 
         if angle_degrees < 0:
             angle_degrees += 360
         return angle_degrees
 
-    def update_angle(self):
-        self.current_angle = self.calculate_current_angle()
-        print(self.current_angle)
+    def update_direction(self):
+        self.current_angle = self.calculate_angle()
         self.image = pygame.transform.rotozoom(
             self.default_image, self.current_angle, 1
         )
         self.rect = self.image.get_rect(center=self.rect.center)
 
+    def movement(self, dt):
+        self_pos = pygame.math.Vector2(self.rect.center)
+        target_pos = pygame.math.Vector2(self.target.rect.center)
+
+        distance = self_pos.distance_to(target_pos)
+        if distance > 100:
+            self.pos.x += self.direction.x * self.speed * dt
+            self.hitbox.centerx = round(self.pos.x)
+            self.rect.centerx = self.hitbox.centerx
+
+            self.pos.y += self.direction.y * self.speed * dt
+            self.hitbox.centery = round(self.pos.y)
+            self.rect.centery = self.hitbox.centery
+
+    def take_damage(self, damage):
+        if not self.dead:
+            self.health -= damage
+            self.update_heathBar()
+
+            if self.health <= 0:
+                self.dead = True
+                self.healthBar_background.kill()
+                self.healthBar.kill()
+                self.kill()
+
+    def update_heathBar(self):
+        healthBar_pos = pygame.math.Vector2(self.rect.center)
+        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
+        healthBar_pos.y += 50
+
+        self.healthBar_background.rect.topleft = healthBar_pos
+        self.healthBar.rect.topleft = healthBar_pos
+
+        ratio = self.health / self.max_health
+        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green.fill("green")
+        self.healthBar.image = surface_green
+
     def update(self, dt):
-        self.update_angle()
+        self.pick_target()
+        self.update_heathBar()
+
+        if not self.target is None:
+            self.movement(dt)
+            self.update_direction()

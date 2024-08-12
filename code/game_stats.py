@@ -48,3 +48,7 @@ ITEM_TOKEN = "token"
 # font
 FONT_TEXT = "SVN-New Athletic M54"
 FONT_LUCKIEST_GUY = "LuckiestGuy-Regular"
+
+#
+HEALTH_BAR_WIDTH = 50
+HEALTH_BAR_HEIGHT = 10

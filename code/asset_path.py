@@ -28,5 +28,5 @@ ASSET_PATH_FONT = os.path.join(ROOT_FOLDER_PATH, "../font/")
 ASSET_PATH_ENTITIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/entities/")
 
 # asset path : zombie
-ASSET_PATH_ZOMBIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/zombies/zombie-red/zombie-red-t7-weapon.png")
+ASSET_PATH_ZOMBIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/zombies/zombie-boss.png")
 

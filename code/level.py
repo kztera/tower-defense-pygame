@@ -64,6 +64,7 @@ class Level:
                     tree_sprites=self.tree_sprites,
                     stone_sprites=self.stone_sprites,
                     entity_sprites=self.entity_sprites,
+                    zombie_sprites=self.zombie_sprites
                 )
 
         # create ground
@@ -83,7 +84,7 @@ class Level:
             Zombie(pos=self.player.pos, 
                    surf=pygame.image.load(ASSET_PATH_ZOMBIES),
                    groups= [self.all_sprites, self.collision_sprites, self.zombie_sprites],
-                   player=self.player
+                   entity_sprites=self.entity_sprites
                    )
             self.timer = 0.0
             self.spawning_zombie = True
