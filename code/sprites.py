@@ -189,8 +189,13 @@ class Entity(Generic):
             (-self.rect.width // 7, -self.rect.height // 7)
         )
 
+        #
         self.pos = pos
         self.entity_head = None
+
+        # health
+        self.max_health = 100
+        self.health = self.max_health
 
         if entity_type == ENTITY_TYPE_DEFENSE:
             return
@@ -211,6 +216,47 @@ class Entity(Generic):
                 entity_name=entity_name,
                 zombie_sprites=zombie_sprites,
             )
+
+        healthBar_pos = pygame.math.Vector2(self.rect.center)
+        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
+        healthBar_pos.y += 50
+
+        surface_red = pygame.Surface((HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT))
+        surface_red.fill("red")
+        self.healthBar_background = HealthBar(
+            healthBar_pos, surface_red, groups[0], z=LAYERS[LAYER_MAX_HEALTH]
+        )
+
+        ratio = self.health / self.max_health
+        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green.fill("green")
+        self.healthBar = HealthBar(
+            healthBar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEATH]
+        )
+
+    def take_damage(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            self.healthBar_background.kill()
+            self.healthBar.kill()
+            self.entity_head.kill()
+            self.kill()
+
+    def update_heathBar(self):
+        healthBar_pos = pygame.math.Vector2(self.rect.center)
+        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
+        healthBar_pos.y += 10
+
+        self.healthBar_background.rect.topleft = healthBar_pos
+        self.healthBar.rect.topleft = healthBar_pos
+
+        ratio = self.health / self.max_health
+        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green.fill("green")
+        self.healthBar.image = surface_green
+
+    def update(self, dt):
+        self.update_heathBar()
 
 
 class Entity_Head(Generic):
@@ -417,8 +463,18 @@ class Zombie(Generic):
         self.speed = 100
 
         # damage
+        self.attacking = False
+        self.swing = False
+        self.min_angle = 0
+        self.max_angle = 0
         self.range = 480
         self.entity_sprites = entity_sprites
+        self.timer = 0
+        self.cooldown = 1
+        self.direction_attack = DIRECTION_DOWN
+        self.attack_pos = USE_TOOL_OFFSET[DIRECTION_DOWN]
+        self.has_caused_damage = False
+        self.damage = 50
 
         # health
         self.dead = False
@@ -465,31 +521,40 @@ class Zombie(Generic):
             angle_degrees += 360
         return angle_degrees
 
-    def update_direction(self):
-        self.current_angle = self.calculate_angle()
+    def update_direction(self, dt):
+        if self.attacking:
+            if self.swing:
+                self.current_angle += 8
+                if self.current_angle >= self.max_angle:
+                    self.swing = False
+            else:
+                if self.current_angle > self.min_angle:
+                    self.current_angle -= 8
+                    self.timer = 0
+                else:
+                    self.timer += dt
+                    if self.timer >= self.cooldown:
+                        self.attacking = False
+        else:
+            self.current_angle = self.calculate_angle()
+
         self.image = pygame.transform.rotozoom(
             self.default_image, self.current_angle, 1
         )
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def movement(self, dt):
-        self_pos = pygame.math.Vector2(self.rect.center)
-        target_pos = pygame.math.Vector2(self.target.rect.center)
+        self.pos.x += self.direction.x * self.speed * dt
+        self.hitbox.centerx = round(self.pos.x)
+        self.rect.centerx = self.hitbox.centerx
 
-        distance = self_pos.distance_to(target_pos)
-        if distance > 100:
-            self.pos.x += self.direction.x * self.speed * dt
-            self.hitbox.centerx = round(self.pos.x)
-            self.rect.centerx = self.hitbox.centerx
-
-            self.pos.y += self.direction.y * self.speed * dt
-            self.hitbox.centery = round(self.pos.y)
-            self.rect.centery = self.hitbox.centery
+        self.pos.y += self.direction.y * self.speed * dt
+        self.hitbox.centery = round(self.pos.y)
+        self.rect.centery = self.hitbox.centery
 
     def take_damage(self, damage):
         if not self.dead:
             self.health -= damage
-            self.update_heathBar()
 
             if self.health <= 0:
                 self.dead = True
@@ -510,10 +575,60 @@ class Zombie(Generic):
         surface_green.fill("green")
         self.healthBar.image = surface_green
 
+    def request_attack(self):
+        self.attacking = True
+        self.swing = True
+        self.has_caused_damage = False
+        self.current_angle = self.calculate_angle()
+        self.min_angle = self.current_angle
+        self.max_angle = self.current_angle + ANGLE_OF_TOOL_USE
+        self.get_attack_pos()
+
+    def attack(self):
+        if self.attacking:
+            if self.target.rect.collidepoint(self.target_pos) and not self.has_caused_damage:
+                self.target.take_damage(self.damage)
+                self.has_caused_damage =  True
+
+    def update_status(self, dt):
+        if not self.target is None:
+            self_pos = pygame.math.Vector2(self.rect.center)
+            target_pos = pygame.math.Vector2(self.target.rect.center)
+
+            distance = self_pos.distance_to(target_pos)
+            if distance > 100:
+                self.movement(dt)
+            else:
+                if not self.attacking:
+                    self.request_attack()
+
+    def get_attack_pos(self):
+        if self.current_angle <= 22.5 or self.current_angle > 337.5:
+            self.direction_attack = DIRECTION_UP
+        elif self.current_angle <= 67.5:
+            self.direction_attack = DIRECTION_DIAGONAL_LEFT_UP
+        elif self.current_angle <= 112.5:
+            self.direction_attack = DIRECTION_LEFT
+        elif self.current_angle <= 157.5:
+            self.direction_attack = DIRECTION_DIAGONAL_LEFT_DOWN
+        elif self.current_angle <= 202.5:
+            self.direction_attack = DIRECTION_DOWN
+        elif self.current_angle <= 247.5:
+            self.direction_attack = DIRECTION_DIAGONAL_RIGHT_DOWN
+        elif self.current_angle <= 292.5:
+            self.direction_attack = DIRECTION_RIGHT
+        elif self.current_angle <= 337.5:
+            self.direction_attack = DIRECTION_DIAGONAL_RIGHT_UP
+
+        self.target_pos = self.rect.center + USE_TOOL_OFFSET[self.direction_attack]
+
     def update(self, dt):
         self.pick_target()
         self.update_heathBar()
 
         if not self.target is None:
-            self.movement(dt)
-            self.update_direction()
+            self.update_status(dt)
+            self.update_direction(dt)
+
+            if self.attacking:
+                self.attack()
