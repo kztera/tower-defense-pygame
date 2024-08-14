@@ -10,7 +10,14 @@ from sprites import Entity, Sample_Entity
 
 class Player(pygame.sprite.Sprite):
     def __init__(
-        self, pos, group, collision_sprites, tree_sprites, stone_sprites, entity_sprites, zombie_sprites
+        self,
+        pos,
+        group,
+        collision_sprites,
+        tree_sprites,
+        stone_sprites,
+        entity_sprites,
+        zombie_sprites,
     ):
         super().__init__(group)
 
@@ -34,6 +41,7 @@ class Player(pygame.sprite.Sprite):
         self.tool_pos = pygame.math.Vector2(self.rect.center)
         self.speed = MOVEMENT_SPEED_PLAYER
         self.direction_state = DIRECTION_DOWN
+        self.attack_pos = USE_TOOL_OFFSET[DIRECTION_DOWN]
 
         # collision
         self.hitbox = self.rect.copy().inflate((-130, -130))
@@ -49,7 +57,6 @@ class Player(pygame.sprite.Sprite):
         self.swing = False
         self.max_angle = 0
         self.min_angle = 0
-
         self.auto_using_tool = False
 
         # entities
@@ -390,13 +397,12 @@ class Player(pygame.sprite.Sprite):
             groups=[self.all_sprites, self.collision_sprites, self.entity_sprites],
             entity_type=entity_type,
             entity_name=entity_name,
-            zombie_sprites=self.zombie_sprites
+            zombie_sprites=self.zombie_sprites,
         )
 
     def snap_to_grid_on_map(self):
         pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
         self.offset = pygame.math.Vector2()
-
 
         self.offset.x = self.rect.centerx - SCREEN_WIDTH_DEFAULT / 2
         self.offset.y = self.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
@@ -460,7 +466,7 @@ class Player(pygame.sprite.Sprite):
         elif mouse_direction <= 337.5:
             self.direction_state = DIRECTION_DIAGONAL_RIGHT_UP
 
-        self.target_pos = self.rect.center + PLAYER_TOOL_OFFSET[self.direction_state]
+        self.target_pos = self.rect.center + USE_TOOL_OFFSET[self.direction_state]
 
     def update_timers(self):
         for timer in self.timers.values():

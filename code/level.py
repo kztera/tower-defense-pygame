@@ -64,7 +64,7 @@ class Level:
                     tree_sprites=self.tree_sprites,
                     stone_sprites=self.stone_sprites,
                     entity_sprites=self.entity_sprites,
-                    zombie_sprites=self.zombie_sprites
+                    zombie_sprites=self.zombie_sprites,
                 )
 
         # create ground
@@ -81,11 +81,12 @@ class Level:
     def spawn_zombie(self, dt):
         self.timer += dt
         if self.timer > self.spawnTime and self.spawning_zombie == False:
-            Zombie(pos=self.player.pos, 
-                   surf=pygame.image.load(ASSET_PATH_ZOMBIES),
-                   groups= [self.all_sprites, self.collision_sprites, self.zombie_sprites],
-                   entity_sprites=self.entity_sprites
-                   )
+            Zombie(
+                pos=self.player.pos,
+                surf=pygame.image.load(ASSET_PATH_ZOMBIES),
+                groups=[self.all_sprites, self.collision_sprites, self.zombie_sprites],
+                entity_sprites=self.entity_sprites,
+            )
             self.timer = 0.0
             self.spawning_zombie = True
             print("Spawn Zombie")
@@ -126,7 +127,6 @@ class CameraGroup(pygame.sprite.Group):
                         hitbox_rect.center = offset_rect.center
                         # pygame.draw.rect(self.display_surface, 'green', hitbox_rect, 5)
                         tartget_pos = (
-                            offset_rect.center
-                            + PLAYER_TOOL_OFFSET[player.direction_state]
+                            offset_rect.center + USE_TOOL_OFFSET[player.direction_state]
                         )
                         # pygame.draw.circle(self.display_surface, 'blue', tartget_pos, 5)
