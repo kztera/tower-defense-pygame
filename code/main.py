@@ -13,7 +13,8 @@ class Game:
             (SCREEN_WIDTH_DEFAULT, SCREEN_HEIGHT_DEFAULT), pygame.RESIZABLE
         )
         pygame.display.set_caption("Tower Defense PyGame")
-
+        self.default_volume = 0.5
+        self.current_volume = self.default_volume
         self.display_surface = pygame.display.get_surface()
         self.time_bar_x = self.display_surface.get_width() - 100
 
@@ -26,9 +27,9 @@ class Game:
             (SCREEN_WIDTH_DEFAULT, SCREEN_HEIGHT_DEFAULT)
         )
         self.day_night_surface.set_alpha(0)
-        self.day_length = 20
-        self.night_length = 20
-        self.intersection_length = 8
+        self.day_length = 75
+        self.night_length = 75
+        self.intersection_length = 15
         self.time_elapsed = 0
 
         self.font_text_title = pygame.font.Font(
@@ -43,12 +44,15 @@ class Game:
 
         self.current_music = None
         self.is_day = True
-        self.fade_time = 0
 
         pygame.mixer.init()
-        pygame.mixer.music.set_volume(0.3)
+        pygame.mixer.music.set_volume(self.default_volume)
 
         self.play_random_music(self.is_day)
+
+    def update_volume(self, volume):
+        self.current_volume = volume
+        pygame.mixer.music.set_volume(self.current_volume)
 
     def play_random_music(self, is_day):
         if is_day:
@@ -57,11 +61,9 @@ class Game:
             new_music = random.choice(self.night_music)
 
         if new_music != self.current_music:
-            if pygame.mixer.music.get_busy():
-                pygame.mixer.music.fadeout(self.fade_time)
-
+            self.update_volume(self.default_volume)
             pygame.mixer.music.load(new_music)
-            pygame.mixer.music.play(fade_ms=self.fade_time, loops=-1)
+            pygame.mixer.music.play(loops=-1)
             self.current_music = new_music
 
     def update_day_night_cycle(self, dt):
@@ -80,6 +82,7 @@ class Game:
                     current_time - (self.day_length - self.intersection_length)
                 ) / self.intersection_length
                 alpha = int(150 * progress)
+                self.update_volume(self.default_volume - self.default_volume * progress)
                 self.day_night_surface.set_alpha(alpha)
 
                 text = self.font_text_title.render(
@@ -103,6 +106,7 @@ class Game:
                     current_time - (cycle_length - self.intersection_length)
                 ) / self.intersection_length
                 alpha = int(150 * (1 - progress))
+                self.update_volume(self.default_volume - self.default_volume * progress)
                 self.day_night_surface.set_alpha(alpha)
             else:
                 self.day_night_surface.set_alpha(150)
