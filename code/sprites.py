@@ -193,13 +193,15 @@ class Entity(Generic):
         self.pos = pos
         self.entity_head = None
 
+        self.entity_type = entity_type
+
         # health
         self.max_health = 100
         self.health = self.max_health
+        self.health_bar_distance = 40
 
-        if entity_type == ENTITY_TYPE_DEFENSE:
-            return
-        else:
+        # create entity head
+        if not entity_type is ENTITY_TYPE_DEFENSE:
             head_surf = pygame.image.load(
                 ASSET_PATH_ENTITIES
                 + entity_name
@@ -217,9 +219,10 @@ class Entity(Generic):
                 zombie_sprites=zombie_sprites,
             )
 
+        # create health bar
         healthBar_pos = pygame.math.Vector2(self.rect.center)
         healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += 50
+        healthBar_pos.y += self.health_bar_distance
 
         surface_red = pygame.Surface((HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT))
         surface_red.fill("red")
@@ -239,13 +242,14 @@ class Entity(Generic):
         if self.health <= 0:
             self.healthBar_background.kill()
             self.healthBar.kill()
-            self.entity_head.kill()
+            if not self.entity_head is None:
+                self.entity_head.kill()
             self.kill()
 
     def update_heathBar(self):
         healthBar_pos = pygame.math.Vector2(self.rect.center)
         healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += 10
+        healthBar_pos.y += self.health_bar_distance
 
         self.healthBar_background.rect.topleft = healthBar_pos
         self.healthBar.rect.topleft = healthBar_pos
@@ -321,7 +325,8 @@ class Entity_Head(Generic):
         dx = self.target.rect.centerx - self.rect.centerx
         dy = self.target.rect.centery - self.rect.centery
 
-        self.direction = pygame.math.Vector2(dx, dy).normalize()
+        if not self.direction is pygame.math.Vector2():
+            self.direction = pygame.math.Vector2(dx, dy).normalize()
 
         angle_radians = math.atan2(dy, dx)
         angle_degrees = math.degrees(angle_radians)
@@ -481,9 +486,11 @@ class Zombie(Generic):
         self.max_health = 100
         self.health = self.max_health
 
+        self.health_bar_distance = 50
+
         healthBar_pos = pygame.math.Vector2(self.rect.center)
         healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += 50
+        healthBar_pos.y += self.health_bar_distance
 
         surface_red = pygame.Surface((HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT))
         surface_red.fill("red")
@@ -499,12 +506,17 @@ class Zombie(Generic):
         )
 
     def pick_target(self):
+        has_target = False
         for entity in self.entity_sprites:
             distance_x = entity.rect.centerx - self.rect.centerx
             distance_y = entity.rect.centery - self.rect.centery
             distance = math.sqrt(distance_x**2 + distance_y**2)
             if distance < self.range:
                 self.target = entity
+                has_target = True
+
+        if has_target is False:
+            self.target = None
 
     def calculate_angle(self):
         dx = self.target.rect.centerx - self.rect.centerx
@@ -565,7 +577,7 @@ class Zombie(Generic):
     def update_heathBar(self):
         healthBar_pos = pygame.math.Vector2(self.rect.center)
         healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += 50
+        healthBar_pos.y += self.health_bar_distance
 
         self.healthBar_background.rect.topleft = healthBar_pos
         self.healthBar.rect.topleft = healthBar_pos
@@ -591,12 +603,21 @@ class Zombie(Generic):
                 self.has_caused_damage =  True
 
     def update_status(self, dt):
-        if not self.target is None:
+        if self.target is None:
+            self.attacking = False
+        else:
             self_pos = pygame.math.Vector2(self.rect.center)
             target_pos = pygame.math.Vector2(self.target.rect.center)
 
             distance = self_pos.distance_to(target_pos)
-            if distance > 100:
+
+            attack_distance = 0
+            if self.target.entity_type == ENTITY_TYPE_DEFENSE:
+                attack_distance = 70
+            else:
+                attack_distance = 100
+
+            if distance > attack_distance:
                 self.movement(dt)
             else:
                 if not self.attacking:
@@ -624,11 +645,10 @@ class Zombie(Generic):
 
     def update(self, dt):
         self.pick_target()
+        self.update_status(dt)
         self.update_heathBar()
 
         if not self.target is None:
-            self.update_status(dt)
             self.update_direction(dt)
-
             if self.attacking:
                 self.attack()
