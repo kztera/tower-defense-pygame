@@ -211,16 +211,24 @@ class Entity(Generic):
             (-self.rect.width // 5, -self.rect.height // 5)
         )
 
-        #
         self.pos = pos
         self.entity_head = None
-
         self.entity_type = entity_type
 
         # health
         self.max_health = 100
         self.health = self.max_health
-        self.health_bar_distance = 40
+        self.health_bar_distance = 0
+        self.health_bar_opacity = 128
+
+        if self.entity_type == ENTITY_TYPE_DEFENSE:
+            self.health_bar_width = TILE_SIZE - 5
+            self.health_bar_height = 5
+            self.health_bar_distance = TILE_SIZE // 2
+        else:
+            self.health_bar_width = TILE_SIZE * 2 - 5
+            self.health_bar_height = HEALTH_BAR_HEIGHT
+            self.health_bar_distance = 40
 
         # create entity head
         if not entity_type is ENTITY_TYPE_DEFENSE:
@@ -242,22 +250,25 @@ class Entity(Generic):
             )
 
         # create health bar
-        healthBar_pos = pygame.math.Vector2(self.rect.center)
-        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += self.health_bar_distance
+        healthBar_pos = self.calculate_health_bar_position()
 
-        surface_red = pygame.Surface((HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT))
+        surface_red = pygame.Surface((self.health_bar_width, self.health_bar_height))
         surface_red.fill("red")
+        surface_red.set_alpha(self.health_bar_opacity)
         self.healthBar_background = HealthBar(
             healthBar_pos, surface_red, groups[0], z=LAYERS[LAYER_MAX_HEALTH]
         )
 
-        ratio = self.health / self.max_health
-        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green = pygame.Surface((self.health_bar_width, self.health_bar_height))
         surface_green.fill("green")
+        surface_green.set_alpha(self.health_bar_opacity)
         self.healthBar = HealthBar(
-            healthBar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEATH]
+            healthBar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEALTH]
         )
+
+        # Ẩn health bar ban đầu
+        self.healthBar_background.image.set_alpha(0)
+        self.healthBar.image.set_alpha(0)
 
     def take_damage(self, damage):
         self.health -= damage
@@ -268,21 +279,38 @@ class Entity(Generic):
                 self.entity_head.kill()
             self.kill()
 
-    def update_heathBar(self):
+    def calculate_health_bar_position(self):
         healthBar_pos = pygame.math.Vector2(self.rect.center)
-        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += self.health_bar_distance
+        healthBar_pos.x -= self.health_bar_width / 2
+        healthBar_pos.y -= self.health_bar_height / 2
+        if self.health_bar_distance > 0:
+            healthBar_pos.y += self.health_bar_distance
+        return healthBar_pos
+
+    def update_health_bar(self):
+        healthBar_pos = self.calculate_health_bar_position()
 
         self.healthBar_background.rect.topleft = healthBar_pos
         self.healthBar.rect.topleft = healthBar_pos
 
         ratio = self.health / self.max_health
-        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green = pygame.Surface(
+            (self.health_bar_width * ratio, self.health_bar_height)
+        )
         surface_green.fill("green")
+        surface_green.set_alpha(self.health_bar_opacity)
         self.healthBar.image = surface_green
 
+        # Chỉ hiển thị health bar khi máu không đủ 100%
+        if self.health < self.max_health:
+            self.healthBar_background.image.set_alpha(self.health_bar_opacity)
+            self.healthBar.image.set_alpha(self.health_bar_opacity)
+        else:
+            self.healthBar_background.image.set_alpha(0)
+            self.healthBar.image.set_alpha(0)
+
     def update(self, dt):
-        self.update_heathBar()
+        self.update_health_bar()
 
 
 class Entity_Head(Generic):
@@ -524,7 +552,7 @@ class Zombie(Generic):
         surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
         surface_green.fill("green")
         self.healthBar = HealthBar(
-            healthBar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEATH]
+            healthBar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEALTH]
         )
 
     def pick_target(self):
@@ -596,7 +624,7 @@ class Zombie(Generic):
                 self.healthBar.kill()
                 self.kill()
 
-    def update_heathBar(self):
+    def update_health_bar(self):
         healthBar_pos = pygame.math.Vector2(self.rect.center)
         healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
         healthBar_pos.y += self.health_bar_distance
@@ -671,7 +699,7 @@ class Zombie(Generic):
     def update(self, dt):
         self.pick_target()
         self.update_status(dt)
-        self.update_heathBar()
+        self.update_health_bar()
 
         if not self.target is None:
             self.update_direction(dt)
