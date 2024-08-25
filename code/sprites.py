@@ -139,6 +139,13 @@ class Sample_Entity(Generic):
         self.hitbox = None
         self.player = player
 
+        self.is_colliding = False
+        self.original_image = surf.copy()
+        self.collision_image = surf.copy()
+        self.collision_image.fill(
+            (255, 0, 0, 128), special_flags=pygame.BLEND_RGBA_MULT
+        )
+
     def snap_to_grid_on_map(self):
         pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
         self.offset = pygame.math.Vector2()
@@ -171,6 +178,21 @@ class Sample_Entity(Generic):
         self.pos = self.snap_to_grid_on_map()
         self.rect = self.image.get_rect(center=self.pos)
 
+        is_small_structure = self.player.selected_entity in [
+            ENTITIES_WALL,
+            ENTITIES_DOOR,
+            ENTITIES_SLOW_TRAP,
+        ]
+        size = (
+            (TILE_SIZE, TILE_SIZE)
+            if is_small_structure
+            else (TILE_SIZE * 2, TILE_SIZE * 2)
+        )
+
+        # Kiểm tra va chạm và cập nhật hình ảnh
+        self.is_colliding = self.player.check_entity_collision(self.pos, size)
+        self.image = self.collision_image if self.is_colliding else self.original_image
+
 
 class Entity(Generic):
     def __init__(
@@ -186,7 +208,7 @@ class Entity(Generic):
         super().__init__(pos, surf, groups, z)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate(
-            (-self.rect.width // 7, -self.rect.height // 7)
+            (-self.rect.width // 5, -self.rect.height // 5)
         )
 
         #
@@ -598,9 +620,12 @@ class Zombie(Generic):
 
     def attack(self):
         if self.attacking:
-            if self.target.rect.collidepoint(self.target_pos) and not self.has_caused_damage:
+            if (
+                self.target.rect.collidepoint(self.target_pos)
+                and not self.has_caused_damage
+            ):
                 self.target.take_damage(self.damage)
-                self.has_caused_damage =  True
+                self.has_caused_damage = True
 
     def update_status(self, dt):
         if self.target is None:
