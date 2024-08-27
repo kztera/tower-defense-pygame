@@ -424,6 +424,8 @@ class Player(pygame.sprite.Sprite):
         return
 
     def create_entity(self):
+        pos_mouse_on_map = self.snap_to_grid_on_map()
+
         first_dash_position = self.selected_entity.find("-")
         entity_name = self.selected_entity[first_dash_position + 1 :]
 
@@ -440,10 +442,9 @@ class Player(pygame.sprite.Sprite):
 
         # Kiểm tra va chạm
         if self.check_entity_collision(pos_mouse_on_map, size):
-            return  # Không tạo entity nếu có va chạm
+            return
 
         if self.entity_can_uprade(0):
-            pos_mouse_on_map = self.snap_to_grid_on_map()
             entity_type = self.get_entity_type()
             # create
             Entity(
@@ -626,6 +627,3 @@ class Player(pygame.sprite.Sprite):
 
         self.move(dt)
         self.rotate()
-
-
-# menu, tinh thue, tkinter
