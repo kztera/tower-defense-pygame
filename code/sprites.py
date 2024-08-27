@@ -191,9 +191,16 @@ class Sample_Entity(Generic):
             else (TILE_SIZE * 2, TILE_SIZE * 2)
         )
 
-        # Kiểm tra va chạm và cập nhật hình ảnh
+        # Kiểm tra điều kiện đặt tháp
         self.is_colliding = self.player.check_entity_collision(self.pos, size)
-        self.image = self.collision_image if self.is_colliding else self.original_image
+        self.is_have_enough_resource = self.player.entity_can_uprade(0)
+        # TODO: Cần kiểm tra thêm xem đã đặt căn cứ chưa?
+        print(self.is_have_enough_resource)
+        self.image = (
+            self.collision_image
+            if self.is_colliding or not self.is_have_enough_resource
+            else self.original_image
+        )
 
 
 # ENTITY
