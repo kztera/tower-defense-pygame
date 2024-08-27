@@ -4,6 +4,8 @@ from settings import *
 from game_stats import *
 from asset_path import *
 
+from tower_config import *
+
 
 class Generic(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
@@ -172,6 +174,9 @@ class Sample_Entity(Generic):
         self.rect = self.image.get_rect(center=self.pos)
 
 
+# ENTITY
+
+
 class Entity(Generic):
     def __init__(
         self,
@@ -181,44 +186,91 @@ class Entity(Generic):
         entity_type,
         entity_name,
         zombie_sprites,
+        player_add_gold,
         z=LAYERS[LAYER_ENTITY_BASE],
     ):
         super().__init__(pos, surf, groups, z)
+        self.pos = pos
+        self.groups = groups
+        self.entity_type = entity_type
+        self.entity_name = entity_name
+        self.zombie_sprites = zombie_sprites
+        # level
+        self.level = 1
+        self.max_level = 1
+        #
+        image_path = self.get_image_path()
+        self.image = pygame.image.load(image_path)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate(
             (-self.rect.width // 7, -self.rect.height // 7)
         )
-
+        # health
+        self.health = 0
+        self.max_health = 0
+        self.health_bar_distance = 40
+        # upgrade
+        self.object_upgrade = None
+        self.is_showing_upgrade = False
+        self.is_clicked = False
+        # setup data
+        formatted_name = self.entity_name.replace("-", "").upper()
+        for tower in TOWER_CONFIG:
+            if tower["NAME"] == formatted_name:
+                self.max_health = tower["HEALTH"][self.level - 1]
+                self.health = self.max_health
+                self.max_level = len(tower["HEALTH"])
         #
-        self.pos = pos
         self.entity_head = None
 
-        self.entity_type = entity_type
+        #
+        self.create_entity_head(player_add_gold)
+        self.create_healthBar()
 
-        # health
-        self.max_health = 100
-        self.health = self.max_health
-        self.health_bar_distance = 40
-
-        # create entity head
-        if not entity_type is ENTITY_TYPE_DEFENSE:
-            head_surf = pygame.image.load(
+    def get_image_path(self):
+        path_image = ""
+        if self.entity_type == ENTITY_TYPE_DEFENSE:
+            path_image = (
                 ASSET_PATH_ENTITIES
-                + entity_name
-                + "/head/"
-                + entity_name
-                + "-t1-head.png"
+                + self.entity_name
+                + "/"
+                + self.entity_name
+                + "-t"
+                + str(self.level)
+                + "-base.png"
+            )
+        else:
+            path_image = (
+                ASSET_PATH_ENTITIES
+                + self.entity_name
+                + "/base/"
+                + self.entity_name
+                + "-t"
+                + str(self.level)
+                + "-base.png"
             )
 
+        return path_image
+
+    def create_entity_head(self, player_add_gold):
+        if not self.entity_type is ENTITY_TYPE_DEFENSE:
             self.entity_head = Entity_Head(
-                pos=pos,
-                surf=head_surf,
-                groups=[groups[0]],
-                entity_type=entity_type,
-                entity_name=entity_name,
-                zombie_sprites=zombie_sprites,
+                pos=self.rect.center,
+                surf=pygame.Surface((0, 0)),
+                groups=self.groups[0],
+                entity_type=self.entity_type,
+                entity_name=self.entity_name,
+                level=self.level,
+                zombie_sprites=self.zombie_sprites,
+                player_add_gold=player_add_gold,
             )
 
+    def take_damage(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            self.destroy_self()
+
+    def create_healthBar(self):
         # create health bar
         healthBar_pos = pygame.math.Vector2(self.rect.center)
         healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
@@ -227,24 +279,15 @@ class Entity(Generic):
         surface_red = pygame.Surface((HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT))
         surface_red.fill("red")
         self.healthBar_background = HealthBar(
-            healthBar_pos, surface_red, groups[0], z=LAYERS[LAYER_MAX_HEALTH]
+            healthBar_pos, surface_red, self.groups[0], z=LAYERS[LAYER_MAX_HEALTH]
         )
 
         ratio = self.health / self.max_health
         surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
         surface_green.fill("green")
         self.healthBar = HealthBar(
-            healthBar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEATH]
+            healthBar_pos, surface_green, self.groups[0], z=LAYERS[LAYER_HEATH]
         )
-
-    def take_damage(self, damage):
-        self.health -= damage
-        if self.health <= 0:
-            self.healthBar_background.kill()
-            self.healthBar.kill()
-            if not self.entity_head is None:
-                self.entity_head.kill()
-            self.kill()
 
     def update_heathBar(self):
         healthBar_pos = pygame.math.Vector2(self.rect.center)
@@ -259,6 +302,47 @@ class Entity(Generic):
         surface_green.fill("green")
         self.healthBar.image = surface_green
 
+    def show_upgrade(self, request_show_upgrade):
+        if request_show_upgrade:
+            if self.is_showing_upgrade == False:
+                self.is_showing_upgrade = True
+                self.object_upgrade = Upgrade(
+                    pos=self.rect.center,
+                    groups=self.groups[0],
+                    entiry_name=self.entity_name,
+                    entity_type=self.entity_type,
+                    level=self.level,
+                )
+        else:
+            self.is_showing_upgrade = False
+            if not self.object_upgrade is None:
+                self.object_upgrade.destroy_self()
+                self.object_upgrade = None
+
+    def request_upgrade(self):
+        if self.level < self.max_level:
+            self.level += 1
+            self.upgrade()
+
+    def request_sell(self):
+        print("Sell")
+        self.destroy_self()
+
+    def upgrade(self):
+        self.entity_head.upgrade()
+
+    def destroy_self(self):
+        self.healthBar_background.kill()
+        self.healthBar.kill()
+        if not self.entity_head is None:
+            self.entity_head.destroy_self()
+        if not self.object_upgrade is None:
+            self.object_upgrade.destroy_self()
+        self.kill()
+
+    def get_object_upgrade(self):
+        return self.object_upgrade
+
     def update(self, dt):
         self.update_heathBar()
 
@@ -271,48 +355,44 @@ class Entity_Head(Generic):
         groups,
         entity_type,
         entity_name,
+        level,
         zombie_sprites,
+        player_add_gold,
         z=LAYERS[LAYER_ENTITY_HEAD],
     ):
         super().__init__(pos, surf, groups, z)
+        self.pos = pos
+        self.groups = groups
+        self.entity_type = entity_type
+        self.entity_name = entity_name
+        self.level = level
+        self.zombie_sprites = zombie_sprites
+        self.player_add_gold = player_add_gold
+        #
+        image_path = self.get_image_path()
+        self.image = pygame.image.load(image_path)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate(
             (-self.rect.width // 7, -self.rect.height // 7)
         )
-        self.default_image = surf
-        self.pos = pos
-        self.groups = groups
+        # rotate
+        self.default_image = self.image
         self.current_angle = 0
-        self.zombie_sprites = zombie_sprites
         self.direction = pygame.math.Vector2()
-
-        #
-        self.can_attack = entity_type == ENTITY_TYPE_ATTACK
-        self.creating_entity_projectile = False
-        self.attack_cooldown = 2
-        self.timer = 0.0
-        self.range = 360
-        self.last_shot = pygame.time.get_ticks()
-        self.target = None
-
         #
         self.projectile_surf = None
+        self.target = None
 
+        self.tower_radius = 0
+        self.ms_between_fire = 2
+        self.timer = 0.0
+        self.damage_to_zombie = 0
+        self.projectile_velocity = 0
+        self.projectile_life_time = 0
+
+        self.gold_per_second = 0
         #
-        self.range_image = pygame.Surface((self.range * 2, self.range * 2))
-        self.range_image.fill((0, 0, 0))
-        self.range_image.set_colorkey((0, 0, 0))
-        pygame.draw.circle(
-            self.range_image, "grey100", (self.range, self.range), self.range
-        )
-        self.range_image.set_alpha(100)
-        self.range_rect = self.range_image.get_rect(center=self.rect.center)
-
-        draw_circle(pos=self.rect.center, surf=self.range_image, groups=groups)
-
-        #
-
-        if self.can_attack:
+        if entity_type is ENTITY_TYPE_ATTACK:
             self.projectile_surf = pygame.image.load(
                 ASSET_PATH_ENTITIES
                 + entity_name
@@ -321,11 +401,46 @@ class Entity_Head(Generic):
                 + "-projectile.png"
             )
 
+        self.update_data_with_level()
+
+        # draw tower radius
+        self.range_image = pygame.Surface(
+            (self.tower_radius * 2, self.tower_radius * 2)
+        )
+        self.range_image.fill((0, 0, 0))
+        self.range_image.set_colorkey((0, 0, 0))
+        pygame.draw.circle(
+            self.range_image,
+            "grey100",
+            (self.tower_radius, self.tower_radius),
+            self.tower_radius,
+        )
+        self.range_image.set_alpha(100)
+        self.range_rect = self.range_image.get_rect(center=self.rect.center)
+
+        self.draw_tower_radius = draw_circle(
+            pos=self.rect.center, surf=self.range_image, groups=groups
+        )
+
+    def get_image_path(self):
+        imgae_path = (
+            ASSET_PATH_ENTITIES
+            + self.entity_name
+            + "/head/"
+            + self.entity_name
+            + "-t"
+            + str(self.level)
+            + "-head.png"
+        )
+
+        return imgae_path
+
     def calculate_current_angle(self):
         dx = self.target.rect.centerx - self.rect.centerx
         dy = self.target.rect.centery - self.rect.centery
 
-        if not self.direction is pygame.math.Vector2():
+        direction_vector = pygame.math.Vector2(dx, dy)
+        if direction_vector.length() > 0:
             self.direction = pygame.math.Vector2(dx, dy).normalize()
 
         angle_radians = math.atan2(dy, dx)
@@ -353,6 +468,9 @@ class Entity_Head(Generic):
             groups=self.groups,
             angle=self.current_angle,
             direction=self.direction,
+            speed=self.projectile_velocity,
+            damage=self.damage_to_zombie,
+            life_time=self.projectile_life_time,
             zombie_sprites=self.zombie_sprites,
         )
 
@@ -362,21 +480,59 @@ class Entity_Head(Generic):
             distance_x = zombie.rect.centerx - self.rect.centerx
             distance_y = zombie.rect.centery - self.rect.centery
             distance = math.sqrt(distance_x**2 + distance_y**2)
-            if distance < self.range:
+            if distance < self.tower_radius:
                 self.target = zombie
                 has_target = True
 
         if not has_target:
             self.target = None
 
+    def upgrade(self):
+        self.level += 1
+        #
+        image_path = self.get_image_path()
+        self.default_image = pygame.image.load(image_path)
+        self.image = pygame.transform.rotozoom(
+            self.default_image, self.current_angle, 1
+        )
+        self.rect = self.image.get_rect(center=self.rect.center)
+        #
+        self.update_data_with_level()
+
+    def update_data_with_level(self):
+        formatted_name = self.entity_name.replace("-", "").upper()
+        for tower in TOWER_CONFIG:
+            if tower["NAME"] == formatted_name:
+                if self.entity_type is ENTITY_TYPE_ATTACK:
+                    self.tower_radius = tower["TOWERRADIUS"][self.level - 1]
+                    self.ms_between_fire = tower["MSBETWEENFIRES"][self.level - 1] / 400
+                    self.damage_to_zombie = tower["DAMAGETOZOMBIES"][self.level - 1]
+                    self.projectile_velocity = (
+                        tower["PROJECTILEVELOCITY"][self.level - 1] * 2
+                    )
+                    self.projectile_life_time = (
+                        tower["PROJECTILELIFETIME"][self.level - 1] / 100
+                    )
+                if self.entity_type is ENTITY_TYPE_PRODUCE:
+                    self.gold_per_second = tower["GOLDPERSECOND"][self.level - 1]
+
+    def destroy_self(self):
+        self.draw_tower_radius.kill()
+        self.kill()
+
     def update(self, dt):
         self.pick_tartget()
         self.update_direction()
 
-        if self.can_attack and not self.target is None:
+        if self.entity_type == ENTITY_TYPE_ATTACK and not self.target is None:
             self.timer += dt
-            if self.timer >= self.attack_cooldown:
+            if self.timer >= self.ms_between_fire:
                 self.create_entity_projectile()
+                self.timer = 0
+        elif self.entity_type == ENTITY_TYPE_PRODUCE:
+            self.timer += dt
+            if self.timer >= 1:
+                self.player_add_gold(self.gold_per_second)
                 self.timer = 0
 
 
@@ -388,29 +544,29 @@ class Entity_Projectile(Generic):
         groups,
         angle,
         direction,
+        speed,
+        damage,
+        life_time,
         zombie_sprites,
         z=LAYERS[LAYER_ENTITY_PROJECTILE],
     ):
         super().__init__(pos, surf, groups, z)
+        self.pos = pos
+        self.image = pygame.transform.rotozoom(surf, angle, 1)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate((-self.rect.width, -self.rect.height))
 
-        # movement
-        self.pos = pos
-        self.direction = direction
-        self.speed = 200
-
-        # rotation
-        self.default_image = surf
         self.current_angle = angle
-        self.image = pygame.transform.rotozoom(
-            self.default_image, self.current_angle, 1
-        )
-        self.rect = self.image.get_rect(center=self.rect.center)
-        self.zombie_sprites = zombie_sprites
+        self.direction = direction
 
-        # damage
-        self.damage = 20
+        self.speed = speed
+        self.damage = damage
+        self.life_time = life_time
+        self.timer = 0.0
+
+        self.zombie_sprites = zombie_sprites
+        #
+        self.default_image = self.image
 
     def movement(self, dt):
         self.pos.x += self.direction.x * self.speed * dt
@@ -426,23 +582,32 @@ class Entity_Projectile(Generic):
             if not zombie.dead:
                 if self.rect.collidepoint(zombie.rect.center):
                     zombie.take_damage(self.damage)
-                    self.kill()
+                    self.destroy_self()
+
+    def destroy_self(self):
+        self.kill()
 
     def update(self, dt):
+        self.timer += dt
+        if self.timer >= self.life_time:
+            self.destroy_self()
+
         self.movement(dt)
         self.cause_damage()
 
 
+#
+
+
 class draw_circle(Generic):
     def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
-        super().__init__(pos, surf, groups[0], z)
+        super().__init__(pos, surf, groups, z)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate(
             (-self.rect.width // 1, -self.rect.height // 1)
         )
 
 
-# ZOMBIE
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups, z=LAYERS[LAYER_MAIN]):
         super().__init__(groups)
@@ -451,6 +616,7 @@ class HealthBar(pygame.sprite.Sprite):
         self.z = z
 
 
+# ZOMBIE
 class Zombie(Generic):
     def __init__(self, pos, surf, groups, entity_sprites, z=LAYERS[LAYER_ZOMBIE]):
         super().__init__(pos, surf, groups, z)
@@ -598,9 +764,12 @@ class Zombie(Generic):
 
     def attack(self):
         if self.attacking:
-            if self.target.rect.collidepoint(self.target_pos) and not self.has_caused_damage:
+            if (
+                self.target.rect.collidepoint(self.target_pos)
+                and not self.has_caused_damage
+            ):
                 self.target.take_damage(self.damage)
-                self.has_caused_damage =  True
+                self.has_caused_damage = True
 
     def update_status(self, dt):
         if self.target is None:
@@ -652,3 +821,385 @@ class Zombie(Generic):
             self.update_direction(dt)
             if self.attacking:
                 self.attack()
+
+
+# UPGRADE
+
+
+class Upgrade(pygame.sprite.Sprite):
+    def __init__(
+        self, pos, groups, entiry_name, entity_type, level, z=LAYERS[LAYER_UPGRADE]
+    ):
+        super().__init__(groups)
+        self.width = 400
+        self.height = 300
+        self.image = pygame.Surface((self.width, self.height)).convert_alpha()
+        self.image.set_alpha(80)
+        self.rect = self.image.get_rect(center=pos)
+        self.z = z
+
+        self.groups = groups
+        self.entiry_name = entiry_name
+        self.entity_type = entity_type
+        self.level = level
+
+        self.tower_current = None
+        self.tower_upgrade = None
+
+        self.text_name = None
+        self.text_level = None
+        self.text_health_current = None
+        self.text_health_upgrade = None
+        self.text_damage_current = None
+        self.text_damage_upgrade = None
+        self.text_range_current = None
+        self.text_range_upgrade = None
+
+        self.text_arrow = None
+
+        self.text_gold_current = None
+        self.text_gold_upgrade = None
+
+        self.button_upgrade = None
+        self.button_sell = None
+
+        self.tower_current = TowerInformation(entiry_name, entity_type, level)
+        self.tower_upgrade = TowerInformation(entiry_name, entity_type, level + 1)
+
+        self.create_name_level(groups, entiry_name, level)
+        self.create_config(groups, entity_type)
+        self.create_button(groups)
+
+    def create_name_level(self, groups, entiry_name, level):
+        # text entity_name
+        str_text_name = entiry_name.replace("-", " ").upper()
+        pos_text_name = pygame.math.Vector2(self.rect.center)
+        pos_text_name.y -= 120
+
+        self.text_name = Text(
+            pos=pos_text_name, groups=groups, text=str_text_name, text_size=40
+        )
+
+        # text level
+        str_text_level = "LEVEL " + str(level).upper()
+        pos_text_level = pygame.math.Vector2(self.rect.center)
+        pos_text_level.y -= 80
+
+        self.text_level = Text(
+            pos=pos_text_level, groups=groups, text=str_text_level, text_size=30
+        )
+
+    def create_config(self, groups, entity_type):
+        # Config
+        if entity_type is ENTITY_TYPE_ATTACK:
+            # health
+            str_text_health_current = (
+                "Health: " + str(self.tower_current.HEALTH).upper()
+            )
+            pos_text_health_current = pygame.math.Vector2(self.rect.center)
+            pos_text_health_current.x -= 110
+            pos_text_health_current.y -= 40
+            self.text_health_current = Text(
+                pos=pos_text_health_current,
+                groups=groups,
+                text=str_text_health_current,
+                text_size=30,
+            )
+
+            str_text_health_upgrade = (
+                "Health: " + str(self.tower_upgrade.HEALTH).upper()
+            )
+            pos_text_health_upgrade = pygame.math.Vector2(self.rect.center)
+            pos_text_health_upgrade.x += 110
+            pos_text_health_upgrade.y -= 40
+            self.text_health_upgrade = Text(
+                pos=pos_text_health_upgrade,
+                groups=groups,
+                text=str_text_health_upgrade,
+                text_size=30,
+            )
+
+            # damage
+            str_text_damage_current = (
+                "Damage: " + str(self.tower_current.DAMAGETOZOMBIES).upper()
+            )
+            pos_text_damage_current = pygame.math.Vector2(self.rect.center)
+            pos_text_damage_current.x -= 110
+            self.text_damage_current = Text(
+                pos=pos_text_damage_current,
+                groups=groups,
+                text=str_text_damage_current,
+                text_size=30,
+            )
+
+            #
+            pos_text_arrow = pygame.math.Vector2(self.rect.center)
+            self.text_arrow = Text(
+                pos=pos_text_arrow, groups=groups, text=">", text_size=60
+            )
+
+            #
+            str_text_damage_upgrade = (
+                "Damage: " + str(self.tower_current.DAMAGETOZOMBIES).upper()
+            )
+            pos_text_damage_upgrade = pygame.math.Vector2(self.rect.center)
+            pos_text_damage_upgrade.x += 110
+            self.text_damage_upgrade = Text(
+                pos=pos_text_damage_upgrade,
+                groups=groups,
+                text=str_text_damage_upgrade,
+                text_size=30,
+            )
+
+            # range
+            str_text_range_current = (
+                "Range: " + str(self.tower_current.TOWERRADIUS).upper()
+            )
+            pos_text_range_current = pygame.math.Vector2(self.rect.center)
+            pos_text_range_current.x -= 110
+            pos_text_range_current.y += 40
+            self.text_range_current = Text(
+                pos=pos_text_range_current,
+                groups=groups,
+                text=str_text_range_current,
+                text_size=30,
+            )
+
+            str_text_range_upgrade = (
+                "Range: " + str(self.tower_current.TOWERRADIUS).upper()
+            )
+            pos_text_range_upgrade = pygame.math.Vector2(self.rect.center)
+            pos_text_range_upgrade.x += 110
+            pos_text_range_upgrade.y += 40
+            self.text_range_upgrade = Text(
+                pos=pos_text_range_upgrade,
+                groups=groups,
+                text=str_text_range_upgrade,
+                text_size=30,
+            )
+
+        elif entity_type is ENTITY_TYPE_PRODUCE:
+            str_text_health_current = (
+                "Health: " + str(self.tower_current.HEALTH).upper()
+            )
+            pos_text_health_current = pygame.math.Vector2(self.rect.center)
+            pos_text_health_current.x -= 110
+            pos_text_health_current.y -= 20
+            self.text_health_current = Text(
+                pos=pos_text_health_current,
+                groups=groups,
+                text=str_text_health_current,
+                text_size=30,
+            )
+
+            str_text_health_upgrade = (
+                "Health: " + str(self.tower_upgrade.HEALTH).upper()
+            )
+            pos_text_health_upgrade = pygame.math.Vector2(self.rect.center)
+            pos_text_health_upgrade.x += 110
+            pos_text_health_upgrade.y -= 20
+            self.text_health_upgrade = Text(
+                pos=pos_text_health_upgrade,
+                groups=groups,
+                text=str_text_health_upgrade,
+                text_size=30,
+            )
+
+            # arrow
+            pos_text_arrow = pygame.math.Vector2(self.rect.center)
+            self.text_arrow = Text(
+                pos=pos_text_arrow, groups=groups, text=">", text_size=60
+            )
+
+            # gold
+            str_text_gold_current = (
+                "Gold/Sec: " + str(self.tower_current.GOLDPERSECOND).upper()
+            )
+            pos_text_gold_current = pygame.math.Vector2(self.rect.center)
+            pos_text_gold_current.x -= 110
+            pos_text_gold_current.y += 20
+            self.text_gold_current = Text(
+                pos=pos_text_gold_current,
+                groups=groups,
+                text=str_text_gold_current,
+                text_size=30,
+            )
+
+            str_text_gold_upgrade = (
+                "Gold/Sec: " + str(self.tower_upgrade.GOLDPERSECOND).upper()
+            )
+            pos_text_gold_upgrade = pygame.math.Vector2(self.rect.center)
+            pos_text_gold_upgrade.x += 110
+            pos_text_gold_upgrade.y += 20
+            self.text_gold_upgrade = Text(
+                pos=pos_text_gold_upgrade,
+                groups=groups,
+                text=str_text_gold_upgrade,
+                text_size=30,
+            )
+
+        else:
+            str_text_health_current = (
+                "Health: " + str(self.tower_current.HEALTH).upper()
+            )
+            pos_text_health_current = pygame.math.Vector2(self.rect.center)
+            pos_text_health_current.x -= 110
+            self.text_health_current = Text(
+                pos=pos_text_health_current,
+                groups=groups,
+                text=str_text_health_current,
+                text_size=30,
+            )
+
+            #
+            pos_text_arrow = pygame.math.Vector2(self.rect.center)
+            self.text_arrow = Text(
+                pos=pos_text_arrow, groups=groups, text=">", text_size=60
+            )
+
+            str_text_health_upgrade = (
+                "Health: " + str(self.tower_upgrade.HEALTH).upper()
+            )
+            pos_text_health_upgrade = pygame.math.Vector2(self.rect.center)
+            pos_text_health_upgrade.x += 110
+            self.text_health_upgrade = Text(
+                pos=pos_text_health_upgrade,
+                groups=groups,
+                text=str_text_health_upgrade,
+                text_size=30,
+            )
+
+    def create_button(self, groups):
+        # BUTTON
+        str_gold = str(self.tower_upgrade.GOLDCOSTS) + " gold, "
+        str_wood = str(self.tower_upgrade.WOODCOSTS) + " wood, "
+        str_stone = str(self.tower_upgrade.STONECOSTS) + " stone, "
+        str_token = str(self.tower_upgrade.TOKENCOSTS) + " token"
+
+        pos_button_upgrade = pygame.math.Vector2(self.rect.center)
+        pos_button_upgrade.y += 80
+        self.button_upgrade = Button(
+            pos=pos_button_upgrade,
+            groups=groups,
+            width=350,
+            height=30,
+            text="Upgrade",
+            text_item=str_gold + str_wood + str_stone + str_token
+        )
+        self.button_upgrade.text.rect.left = pos_button_upgrade.x - 350 / 2 + 20
+        self.button_upgrade.text_item.rect.left = self.button_upgrade.text.rect.right + 10
+
+        pos_button_sell = pygame.math.Vector2(self.rect.center)
+        pos_button_sell.y += 120
+        self.button_sell = Button(
+            pos=pos_button_sell, groups=groups, width=350, height=30, text="Sell", text_item="2 token"
+        )
+        self.button_sell.text.rect.left = pos_button_sell.x - 350 / 2 + 20
+        self.button_sell.text_item.rect.left = self.button_sell.text.rect.right + 10
+
+
+    def destroy_self(self):
+        self.text_name.destroy_self()
+        self.text_level.destroy_self()
+        self.text_health_current.destroy_self()
+        self.text_health_upgrade.destroy_self()
+
+        if self.entity_type is ENTITY_TYPE_ATTACK:
+            self.text_damage_current.destroy_self()
+            self.text_damage_upgrade.destroy_self()
+            self.text_range_current.destroy_self()
+            self.text_range_upgrade.destroy_self()
+        elif self.entity_type is ENTITY_TYPE_PRODUCE:
+            self.text_gold_current.destroy_self()
+            self.text_gold_upgrade.destroy_self()
+
+        self.text_arrow.destroy_self()
+        self.button_upgrade.destroy_self()
+        self.button_sell.destroy_self()
+
+        self.kill()
+
+
+class TowerInformation:
+    def __init__(self, entiry_name, entity_type, level):
+        self.NAME = None
+        self.GOLDCOSTS = None
+        self.WOODCOSTS = None
+        self.STONECOSTS = None
+        self.TOKENCOSTS = None
+        self.HEALTH = None
+        #
+        self.GOLDPERSECOND = None
+        #
+        self.DAMAGETOZOMBIES = None
+        self.TOWERRADIUS = None
+        self.MSBETWEENFIRES = None
+        self.PROJECTILEVELOCITY = None
+        self.PROJECTILELIFETIME = None
+
+        formatted_name = entiry_name.replace("-", "").upper()
+        for tower in TOWER_CONFIG:
+            if tower["NAME"] == formatted_name:
+                self.NAME = tower["NAME"]
+                self.GOLDCOSTS = tower["GOLDCOSTS"][level - 1]
+                self.WOODCOSTS = tower["WOODCOSTS"][level - 1]
+                self.STONECOSTS = tower["STONECOSTS"][level - 1]
+                self.TOKENCOSTS = tower["TOKENCOSTS"][level - 1]
+                self.HEALTH = tower["HEALTH"][level - 1]
+
+                if entity_type is ENTITY_TYPE_PRODUCE:
+                    self.GOLDPERSECOND = tower["GOLDPERSECOND"][level - 1]
+
+                elif entity_type is ENTITY_TYPE_ATTACK:
+                    self.DAMAGETOZOMBIES = tower["DAMAGETOZOMBIES"][level - 1]
+                    self.TOWERRADIUS = tower["TOWERRADIUS"][level - 1]
+                    self.MSBETWEENFIRES = tower["MSBETWEENFIRES"][level - 1]
+                    self.PROJECTILEVELOCITY = tower["PROJECTILEVELOCITY"][level - 1]
+                    self.PROJECTILELIFETIME = tower["PROJECTILELIFETIME"][level - 1]
+
+
+class Button(pygame.sprite.Sprite):
+    def __init__(
+        self, pos, groups, width, height, text, text_item, z=LAYERS[LAYER_BUTTON]
+    ):
+        super().__init__(groups)
+        self.image = pygame.Surface((width, height)).convert_alpha()
+        self.image.set_alpha(80)
+        self.rect = self.image.get_rect(center=pos)
+        self.z = z
+
+        self.text = Text(pos=pos, groups=groups, text=text, text_size=25)
+        self.text_item = Text(pos=pos, groups=groups, text=text_item, text_size=20)
+
+    def destroy_self(self):
+        self.text.destroy_self()
+        self.text_item.destroy_self()
+        self.kill()
+
+
+class Text(pygame.sprite.Sprite):
+    def __init__(self, pos, groups, text, text_size, z=LAYERS[LAYER_TEXT]):
+        super().__init__(groups)
+        font = pygame.font.Font(None, text_size)
+        self.image = font.render(text, True, (255, 255, 255))
+        self.rect = self.image.get_rect(center=pos)
+        self.z = z
+
+    def destroy_self(self):
+        self.kill()
+
+
+""" 
+    MSBEFOREREGEN: Thời gian chờ để tháp bắt đầu hồi máu sau khi bị tấn công (ms = milliseconds)
+    HEALTHREGENPERSECOND: Máu hồi mỗi giây
+    DAMAGETOPLAYERS: Sát thương của tháp đối với người chơi
+    DAMAGETONEUTRALS: Sát thương của tháp đối với neutral
+    PROJECTILELIFETIME: Thời gian tồn tại của đạn (ms)
+    PROJECTILEVELOCITY: Vận tốc của đạn
+    PROJECTILENAME: Tên của đạn
+    PROJECTILEAOE: Đạn có gây sát thương cho nhiều mục tiêu không
+    PROJECTILEAOERADIUS: Bán kính của đạn
+    PROJECTILECOLLISIONRADIUS: Bán kính va chạm của đạn
+    PROJECTILECOUNT: Số lượng đạn mỗi lần bắn
+    PROJECTILEIGNORESCOLLISIONS: Đạn có bỏ qua va chạm không
+    PROJECTILEMAXRANGE: Khoảng cách tối đa mà đạn có thể đi được"""

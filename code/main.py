@@ -36,7 +36,7 @@ class Game:
         self.fade_time = 2000
 
         pygame.mixer.init()
-        pygame.mixer.music.set_volume(0.3)
+        pygame.mixer.music.set_volume(0.0)
 
         self.play_random_music(self.is_day)
 
