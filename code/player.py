@@ -424,13 +424,10 @@ class Player(pygame.sprite.Sprite):
         return
 
     def create_entity(self):
-<<<<<<< HEAD
-=======
         pos_mouse_on_map = self.snap_to_grid_on_map()
 
         first_dash_position = self.selected_entity.find("-")
         entity_name = self.selected_entity[first_dash_position + 1 :]
->>>>>>> 2843e02d5854e692cc84760bbe2090f875acdd5b
 
         is_small_structure = self.selected_entity in [
             ENTITIES_WALL,
@@ -448,14 +445,6 @@ class Player(pygame.sprite.Sprite):
             return
 
         if self.entity_can_uprade(0):
-<<<<<<< HEAD
-            first_dash_position = self.selected_entity.find("-")
-            entity_name = self.selected_entity[first_dash_position + 1 :]
-
-            pos_mouse_on_map = self.snap_to_grid_on_map()
-
-=======
->>>>>>> 2843e02d5854e692cc84760bbe2090f875acdd5b
             entity_type = self.get_entity_type()
 
             # create
@@ -639,9 +628,3 @@ class Player(pygame.sprite.Sprite):
 
         self.move(dt)
         self.rotate()
-<<<<<<< HEAD
-
-
-# menu, tinh thue, tkinter
-=======
->>>>>>> 2843e02d5854e692cc84760bbe2090f875acdd5b
