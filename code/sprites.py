@@ -144,6 +144,13 @@ class Sample_Entity(Generic):
         self.hitbox = None
         self.player = player
 
+        self.is_colliding = False
+        self.original_image = surf.copy()
+        self.collision_image = surf.copy()
+        self.collision_image.fill(
+            (255, 0, 0, 128), special_flags=pygame.BLEND_RGBA_MULT
+        )
+
     def snap_to_grid_on_map(self):
         pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
         self.offset = pygame.math.Vector2()
@@ -176,6 +183,21 @@ class Sample_Entity(Generic):
         self.pos = self.snap_to_grid_on_map()
         self.rect = self.image.get_rect(center=self.pos)
 
+        is_small_structure = self.player.selected_entity in [
+            ENTITIES_WALL,
+            ENTITIES_DOOR,
+            ENTITIES_SLOW_TRAP,
+        ]
+        size = (
+            (TILE_SIZE, TILE_SIZE)
+            if is_small_structure
+            else (TILE_SIZE * 2, TILE_SIZE * 2)
+        )
+
+        # Kiểm tra va chạm và cập nhật hình ảnh
+        self.is_colliding = self.player.check_entity_collision(self.pos, size)
+        self.image = self.collision_image if self.is_colliding else self.original_image
+
 
 # ENTITY
 
@@ -206,12 +228,23 @@ class Entity(Generic):
         self.image = pygame.image.load(image_path)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate(
-            (-self.rect.width // 7, -self.rect.height // 7)
+            (-self.rect.width // 5, -self.rect.height // 5)
         )
         # health
-        self.health = 0
-        self.max_health = 0
-        self.health_bar_distance = 40
+        self.max_health = 100
+        self.health = self.max_health
+        self.health_bar_distance = 0
+        self.health_bar_opacity = 128
+
+        if self.entity_type == ENTITY_TYPE_DEFENSE:
+            self.health_bar_width = TILE_SIZE - 5
+            self.health_bar_height = 5
+            self.health_bar_distance = TILE_SIZE // 2
+        else:
+            self.health_bar_width = TILE_SIZE * 2 - 10
+            self.health_bar_height = HEALTH_BAR_HEIGHT
+            self.health_bar_distance = TILE_SIZE
+
         # upgrade
         self.object_upgrade = None
         self.is_showing_upgrade = False
@@ -225,10 +258,9 @@ class Entity(Generic):
                 self.max_level = len(tower["HEALTH"])
         #
         self.entity_head = None
-
         #
         self.create_entity_head(player_add_gold)
-        self.create_healthBar()
+        self.create_health_bar()
 
     def get_image_path(self):
         path_image = ""
@@ -273,37 +305,66 @@ class Entity(Generic):
         if self.health <= 0:
             self.destroy_self()
 
-    def create_healthBar(self):
+    def create_health_bar(self):
         # create health bar
-        healthBar_pos = pygame.math.Vector2(self.rect.center)
-        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += self.health_bar_distance
+        health_bar_pos = self.calculate_health_bar_position()
 
-        surface_red = pygame.Surface((HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT))
+        surface_red = pygame.Surface((self.health_bar_width, self.health_bar_height))
         surface_red.fill("red")
+        surface_red.set_alpha(self.health_bar_opacity)
         self.healthBar_background = HealthBar(
-            healthBar_pos, surface_red, self.groups[0], z=LAYERS[LAYER_MAX_HEALTH]
+            health_bar_pos, surface_red, self.groups[0], z=LAYERS[LAYER_MAX_HEALTH]
         )
 
-        ratio = self.health / self.max_health
-        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green = pygame.Surface((self.health_bar_width, self.health_bar_height))
         surface_green.fill("green")
+        surface_green.set_alpha(self.health_bar_opacity)
         self.healthBar = HealthBar(
-            healthBar_pos, surface_green, self.groups[0], z=LAYERS[LAYER_HEATH]
+            health_bar_pos, surface_green, self.groups[0], z=LAYERS[LAYER_HEALTH]
         )
 
-    def update_heathBar(self):
-        healthBar_pos = pygame.math.Vector2(self.rect.center)
-        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += self.health_bar_distance
+        # Ẩn health bar ban đầu
+        self.healthBar_background.image.set_alpha(0)
+        self.healthBar.image.set_alpha(0)
+
+    def take_damage(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            self.healthBar_background.kill()
+            self.healthBar.kill()
+            if not self.entity_head is None:
+                self.entity_head.kill()
+            self.kill()
+
+    def calculate_health_bar_position(self):
+        health_bar_pos = pygame.math.Vector2(self.rect.center)
+        health_bar_pos.x -= self.health_bar_width / 2
+        health_bar_pos.y -= self.health_bar_height / 2
+        if self.health_bar_distance > 0:
+            health_bar_pos.y += self.health_bar_distance
+        return health_bar_pos
+
+    def update_health_bar(self):
+        healthBar_pos = self.calculate_health_bar_position()
 
         self.healthBar_background.rect.topleft = healthBar_pos
         self.healthBar.rect.topleft = healthBar_pos
 
         ratio = self.health / self.max_health
-        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green = pygame.Surface(
+            (self.health_bar_width * ratio, self.health_bar_height)
+        )
         surface_green.fill("green")
+        surface_green.set_alpha(self.health_bar_opacity)
         self.healthBar.image = surface_green
+
+        # Chỉ hiển thị health bar khi máu không đủ 100%
+        if self.health < self.max_health:
+            self.healthBar_background.image.set_alpha(self.health_bar_opacity)
+            self.healthBar.image.set_alpha(self.health_bar_opacity)
+        else:
+            self.healthBar_background.image.set_alpha(0)
+            self.healthBar.image.set_alpha(0)
 
     def show_upgrade(self, request_show_upgrade):
         if request_show_upgrade:
@@ -347,7 +408,7 @@ class Entity(Generic):
         return self.object_upgrade
 
     def update(self, dt):
-        self.update_heathBar()
+        self.update_health_bar()
 
 
 class Entity_Head(Generic):
@@ -406,24 +467,24 @@ class Entity_Head(Generic):
 
         self.update_data_with_level()
 
-        # draw tower radius
-        self.range_image = pygame.Surface(
-            (self.tower_radius * 2, self.tower_radius * 2)
-        )
-        self.range_image.fill((0, 0, 0))
-        self.range_image.set_colorkey((0, 0, 0))
-        pygame.draw.circle(
-            self.range_image,
-            "grey100",
-            (self.tower_radius, self.tower_radius),
-            self.tower_radius,
-        )
-        self.range_image.set_alpha(100)
-        self.range_rect = self.range_image.get_rect(center=self.rect.center)
+        # # draw tower radius
+        # self.range_image = pygame.Surface(
+        #     (self.tower_radius * 2, self.tower_radius * 2)
+        # )
+        # self.range_image.fill((0, 0, 0))
+        # self.range_image.set_colorkey((0, 0, 0))
+        # pygame.draw.circle(
+        #     self.range_image,
+        #     "grey100",
+        #     (self.tower_radius, self.tower_radius),
+        #     self.tower_radius,
+        # )
+        # self.range_image.set_alpha(100)
+        # self.range_rect = self.range_image.get_rect(center=self.rect.center)
 
-        self.draw_tower_radius = draw_circle(
-            pos=self.rect.center, surf=self.range_image, groups=groups
-        )
+        # self.draw_tower_radius = draw_circle(
+        #     pos=self.rect.center, surf=self.range_image, groups=groups
+        # )
 
     def get_image_path(self):
         imgae_path = (
@@ -657,21 +718,21 @@ class Zombie(Generic):
 
         self.health_bar_distance = 50
 
-        healthBar_pos = pygame.math.Vector2(self.rect.center)
-        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += self.health_bar_distance
+        health_bar_pos = pygame.math.Vector2(self.rect.center)
+        health_bar_pos.x -= HEALTH_BAR_WIDTH / 2
+        health_bar_pos.y += self.health_bar_distance
 
         surface_red = pygame.Surface((HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT))
         surface_red.fill("red")
         self.healthBar_background = HealthBar(
-            healthBar_pos, surface_red, groups[0], z=LAYERS[LAYER_MAX_HEALTH]
+            health_bar_pos, surface_red, groups[0], z=LAYERS[LAYER_MAX_HEALTH]
         )
 
         ratio = self.health / self.max_health
         surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
         surface_green.fill("green")
         self.healthBar = HealthBar(
-            healthBar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEATH]
+            health_bar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEALTH]
         )
 
     def pick_target(self):
@@ -743,13 +804,13 @@ class Zombie(Generic):
                 self.healthBar.kill()
                 self.kill()
 
-    def update_heathBar(self):
-        healthBar_pos = pygame.math.Vector2(self.rect.center)
-        healthBar_pos.x -= HEALTH_BAR_WIDTH / 2
-        healthBar_pos.y += self.health_bar_distance
+    def update_health_bar(self):
+        health_bar_pos = pygame.math.Vector2(self.rect.center)
+        health_bar_pos.x -= HEALTH_BAR_WIDTH / 2
+        health_bar_pos.y += self.health_bar_distance
 
-        self.healthBar_background.rect.topleft = healthBar_pos
-        self.healthBar.rect.topleft = healthBar_pos
+        self.healthBar_background.rect.topleft = health_bar_pos
+        self.healthBar.rect.topleft = health_bar_pos
 
         ratio = self.health / self.max_health
         surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
@@ -818,7 +879,7 @@ class Zombie(Generic):
     def update(self, dt):
         self.pick_target()
         self.update_status(dt)
-        self.update_heathBar()
+        self.update_health_bar()
 
         if not self.target is None:
             self.update_direction(dt)
@@ -1087,19 +1148,25 @@ class Upgrade(pygame.sprite.Sprite):
             width=350,
             height=30,
             text="Upgrade",
-            text_item=str_gold + str_wood + str_stone + str_token
+            text_item=str_gold + str_wood + str_stone + str_token,
         )
         self.button_upgrade.text.rect.left = pos_button_upgrade.x - 350 / 2 + 20
-        self.button_upgrade.text_item.rect.left = self.button_upgrade.text.rect.right + 10
+        self.button_upgrade.text_item.rect.left = (
+            self.button_upgrade.text.rect.right + 10
+        )
 
         pos_button_sell = pygame.math.Vector2(self.rect.center)
         pos_button_sell.y += 120
         self.button_sell = Button(
-            pos=pos_button_sell, groups=groups, width=350, height=30, text="Sell", text_item="2 token"
+            pos=pos_button_sell,
+            groups=groups,
+            width=350,
+            height=30,
+            text="Sell",
+            text_item="2 token",
         )
         self.button_sell.text.rect.left = pos_button_sell.x - 350 / 2 + 20
         self.button_sell.text_item.rect.left = self.button_sell.text.rect.right + 10
-
 
     def destroy_self(self):
         self.text_name.destroy_self()

@@ -232,8 +232,9 @@ class Player(pygame.sprite.Sprite):
 
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    # self.timers[ENTITY_USE_TIMER].activate()
-                    self.create_entity()
+                    if not self.sample_entity_image.is_colliding:
+                        # self.timers[ENTITY_USE_TIMER].activate()
+                        self.create_entity()
         else:
             self.sample_entity_image = None
 
@@ -423,13 +424,38 @@ class Player(pygame.sprite.Sprite):
         return
 
     def create_entity(self):
+<<<<<<< HEAD
+=======
+        pos_mouse_on_map = self.snap_to_grid_on_map()
+
+        first_dash_position = self.selected_entity.find("-")
+        entity_name = self.selected_entity[first_dash_position + 1 :]
+>>>>>>> 2843e02d5854e692cc84760bbe2090f875acdd5b
+
+        is_small_structure = self.selected_entity in [
+            ENTITIES_WALL,
+            ENTITIES_DOOR,
+            ENTITIES_SLOW_TRAP,
+        ]
+        size = (
+            (TILE_SIZE, TILE_SIZE)
+            if is_small_structure
+            else (TILE_SIZE * 2, TILE_SIZE * 2)
+        )
+
+        # Kiểm tra va chạm
+        if self.check_entity_collision(pos_mouse_on_map, size):
+            return
 
         if self.entity_can_uprade(0):
+<<<<<<< HEAD
             first_dash_position = self.selected_entity.find("-")
             entity_name = self.selected_entity[first_dash_position + 1 :]
 
             pos_mouse_on_map = self.snap_to_grid_on_map()
 
+=======
+>>>>>>> 2843e02d5854e692cc84760bbe2090f875acdd5b
             entity_type = self.get_entity_type()
 
             # create
@@ -574,6 +600,33 @@ class Player(pygame.sprite.Sprite):
         self.is_clicking_on_entity = False
         return None
 
+    def check_entity_collision(self, pos, size):
+        temp_rect = pygame.Rect(
+            pos[0] - size[0] / 2, pos[1] - size[1] / 2, size[0], size[1]
+        )
+
+        if temp_rect.colliderect(self.hitbox):
+            return True
+
+        for entity in self.entity_sprites:
+            if temp_rect.colliderect(entity.rect):
+                return True
+
+        for tree in self.tree_sprites:
+            if temp_rect.colliderect(tree.hitbox):
+                return True
+
+        for stone in self.stone_sprites:
+            if temp_rect.colliderect(stone.hitbox):
+                return True
+
+        for sprite in self.collision_sprites:
+            if sprite not in self.entity_sprites and hasattr(sprite, "hitbox"):
+                if temp_rect.colliderect(sprite.hitbox):
+                    return True
+
+        return False
+
     def update_timers(self):
         for timer in self.timers.values():
             timer.update()
@@ -586,6 +639,9 @@ class Player(pygame.sprite.Sprite):
 
         self.move(dt)
         self.rotate()
+<<<<<<< HEAD
 
 
 # menu, tinh thue, tkinter
+=======
+>>>>>>> 2843e02d5854e692cc84760bbe2090f875acdd5b
