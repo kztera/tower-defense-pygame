@@ -5,16 +5,19 @@ WOODCOSTS: Gỗ để mua tháp/nâng cấp
 STONECOSTS: Đá để mua tháp/nâng cấp
 TOKENCOSTS: Token để mua tháp/nâng cấp
 HEALTH: Máu của tháp
-MSBEFOREREGEN: Thời gian chờ để tháp bắt đầu hồi máu sau khi bị tấn công (ms = milliseconds)
-HEALTHREGENPERSECOND: Máu hồi mỗi giây
 TOWERRADIUS: Bán kính của tháp
 MSBETWEENFIRES: Thời gian giữa các lần bắn của tháp (ms)
 DAMAGETOZOMBIES: Sát thương của tháp đối với zombie
+GOLDPERSECOND: gold nhận được mỗi giây
+PROJECTILENAME: Tên của đạn
+PROJECTILEVELOCITY: Vận tốc của đạn
+PROJECTILELIFETIME: Thời gian tồn tại của đạn (ms)
+
+MSBEFOREREGEN: Thời gian chờ để tháp bắt đầu hồi máu sau khi bị tấn công (ms = milliseconds)
+HEALTHREGENPERSECOND: Máu hồi mỗi giây
+
 DAMAGETOPLAYERS: Sát thương của tháp đối với người chơi
 DAMAGETONEUTRALS: Sát thương của tháp đối với neutral
-PROJECTILELIFETIME: Thời gian tồn tại của đạn (ms)
-PROJECTILEVELOCITY: Vận tốc của đạn
-PROJECTILENAME: Tên của đạn
 PROJECTILEAOE: Đạn có gây sát thương cho nhiều mục tiêu không
 PROJECTILEAOERADIUS: Bán kính của đạn
 PROJECTILECOLLISIONRADIUS: Bán kính va chạm của đạn
@@ -256,3 +259,9 @@ TOWER_CONFIG = [
         "SLOWAMOUNT": [0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.7, 1],
     },
 ]
+
+'''
+            FIX 
+- Cần sửa lại thời gian bắn của các tháp
+- Khoảng cách tấn công của các tháp
+'''

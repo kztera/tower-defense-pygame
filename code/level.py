@@ -96,7 +96,10 @@ class Level:
         self.all_sprites.custom_draw(self.player)
         self.all_sprites.update(dt)
 
+
         self.spawn_zombie(dt)
+
+
         self.overlay.display()
         # print(self.player.items_inventory)
 

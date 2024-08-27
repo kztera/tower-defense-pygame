@@ -6,6 +6,7 @@ from timeCounter import Timer
 from asset_path import *
 from game_stats import *
 from sprites import Entity, Sample_Entity
+from tower_config import *
 
 
 class Player(pygame.sprite.Sprite):
@@ -104,6 +105,15 @@ class Player(pygame.sprite.Sprite):
 
         #
         self.zombie_sprites = zombie_sprites
+
+        #
+        self.entity_clicked = None
+        self.is_clicking_on_entity = False
+
+        self.gold_cost = 0
+        self.wood_cost = 0
+        self.stone_cost = 0
+        self.token_cost = 0
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -223,10 +233,55 @@ class Player(pygame.sprite.Sprite):
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if not self.sample_entity_image.is_colliding:
-                        self.timers[ENTITY_USE_TIMER].activate()
+                        # self.timers[ENTITY_USE_TIMER].activate()
                         self.create_entity()
         else:
             self.sample_entity_image = None
+
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    entity_ret = self.check_entity_click()
+                    if entity_ret is None:
+                        if not self.entity_clicked is None:
+                            pos_mouse = self.snap_to_grid_on_map()
+                            object_upgrade = self.entity_clicked.get_object_upgrade()
+                            if not object_upgrade is None:
+                                if object_upgrade.rect.collidepoint(pos_mouse):
+                                    exact_position_mouse = (
+                                        self.exact_position_of_mouse()
+                                    )
+                                    if object_upgrade.button_upgrade.rect.collidepoint(
+                                        exact_position_mouse
+                                    ) and self.entity_can_uprade(
+                                        self.entity_clicked.level
+                                    ):
+                                        self.entity_clicked.request_upgrade()
+                                        # reduce item
+                                        self.items_inventory[
+                                            ITEM_GOLD
+                                        ] -= self.gold_cost
+                                        self.items_inventory[
+                                            ITEM_WOOD
+                                        ] -= self.wood_cost
+                                        self.items_inventory[
+                                            ITEM_STONE
+                                        ] -= self.stone_cost
+                                        self.items_inventory[
+                                            ITEM_TOKEN
+                                        ] -= self.token_cost
+                                    elif object_upgrade.button_sell.rect.collidepoint(
+                                        exact_position_mouse
+                                    ):
+                                        self.entity_clicked.request_sell()
+                                else:
+                                    self.entity_clicked.show_upgrade(False)
+                                    self.entity_clicked = None
+                    else:
+                        if not self.entity_clicked is None:
+                            self.entity_clicked.show_upgrade(False)
+
+                        self.entity_clicked = entity_ret
+                        self.entity_clicked.show_upgrade(True)
 
         # change entity
         if not self.timers[ENTITY_SWITCH_TIMER].active:
@@ -369,11 +424,8 @@ class Player(pygame.sprite.Sprite):
         return
 
     def create_entity(self):
-        pos_mouse_on_map = self.snap_to_grid_on_map()
-
         first_dash_position = self.selected_entity.find("-")
         entity_name = self.selected_entity[first_dash_position + 1 :]
-        path_base = ""
 
         is_small_structure = self.selected_entity in [
             ENTITIES_WALL,
@@ -390,31 +442,62 @@ class Player(pygame.sprite.Sprite):
         if self.check_entity_collision(pos_mouse_on_map, size):
             return  # Không tạo entity nếu có va chạm
 
-        # entity type
-        entity_type = self.get_entity_type()
-
-        if entity_type == ENTITY_TYPE_DEFENSE:
-            path_base = (
-                ASSET_PATH_ENTITIES + entity_name + "/" + entity_name + "-t1-base.png"
+        if self.entity_can_uprade(0):
+            pos_mouse_on_map = self.snap_to_grid_on_map()
+            entity_type = self.get_entity_type()
+            # create
+            Entity(
+                pos=pos_mouse_on_map,
+                surf=pygame.Surface((0, 0)),
+                groups=[self.all_sprites, self.collision_sprites, self.entity_sprites],
+                entity_type=entity_type,
+                entity_name=entity_name,
+                zombie_sprites=self.zombie_sprites,
+                player_add_gold=self.player_add_gold,
             )
-        else:
-            path_base = (
-                ASSET_PATH_ENTITIES
-                + entity_name
-                + "/base/"
-                + entity_name
-                + "-t1-base.png"
-            )
+            # reduce item
+            self.items_inventory[ITEM_GOLD] -= self.gold_cost
+            self.items_inventory[ITEM_WOOD] -= self.wood_cost
+            self.items_inventory[ITEM_STONE] -= self.stone_cost
+            self.items_inventory[ITEM_TOKEN] -= self.token_cost
 
-        # create
-        new_entity = Entity(
-            pos=pos_mouse_on_map,
-            surf=pygame.image.load(path_base),
-            groups=[self.all_sprites, self.collision_sprites, self.entity_sprites],
-            entity_type=entity_type,
-            entity_name=entity_name,
-            zombie_sprites=self.zombie_sprites,
-        )
+    def entity_can_uprade(self, entity_level):
+        if entity_level == 9:
+            return False
+
+        first_dash_position = self.selected_entity.find("-")
+        entity_name = self.selected_entity[first_dash_position + 1 :]
+
+        have_enough_condition = False
+
+        formatted_name = entity_name.replace("-", "").upper()
+        for tower in TOWER_CONFIG:
+            if tower["NAME"] == formatted_name:
+                self.gold_cost = int(tower["GOLDCOSTS"][entity_level])
+                self.wood_cost = int(tower["WOODCOSTS"][entity_level])
+                self.stone_cost = int(tower["STONECOSTS"][entity_level])
+                self.token_cost = int(tower["TOKENCOSTS"][entity_level])
+
+                has_enough_gold = int(self.items_inventory[ITEM_GOLD]) >= self.gold_cost
+                has_enough_wood = int(self.items_inventory[ITEM_WOOD]) >= self.wood_cost
+                has_enough_stone = (
+                    int(self.items_inventory[ITEM_STONE]) >= self.stone_cost
+                )
+                has_enough_token = (
+                    int(self.items_inventory[ITEM_TOKEN]) >= self.token_cost
+                )
+
+                have_enough_condition = (
+                    has_enough_gold
+                    and has_enough_wood
+                    and has_enough_stone
+                    and has_enough_token
+                )
+
+        return have_enough_condition
+
+    def player_add_gold(self, quantity):
+        self.items_inventory[ITEM_GOLD] += quantity
 
     def snap_to_grid_on_map(self):
         pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
@@ -442,6 +525,16 @@ class Player(pygame.sprite.Sprite):
             snapped_y = round(pos_mouse_on_map.y / TILE_SIZE) * TILE_SIZE
 
         pos_mouse_on_map = pygame.math.Vector2(snapped_x, snapped_y)
+
+        return pos_mouse_on_map
+
+    def exact_position_of_mouse(self):
+        pos_mouse_on_screen = pygame.math.Vector2(pygame.mouse.get_pos())
+        self.offset = pygame.math.Vector2()
+
+        self.offset.x = self.rect.centerx - SCREEN_WIDTH_DEFAULT / 2
+        self.offset.y = self.rect.centery - SCREEN_HEIGHT_DEFAULT / 2
+        pos_mouse_on_map = pos_mouse_on_screen + self.offset
 
         return pos_mouse_on_map
 
@@ -484,6 +577,16 @@ class Player(pygame.sprite.Sprite):
 
         self.target_pos = self.rect.center + USE_TOOL_OFFSET[self.direction_state]
 
+    def check_entity_click(self):
+        mouse_on_map = self.exact_position_of_mouse()
+        for entity in self.entity_sprites:
+            if entity.rect.collidepoint(mouse_on_map):
+                self.is_clicking_on_entity = True
+                return entity
+
+        self.is_clicking_on_entity = False
+        return None
+
     def check_entity_collision(self, pos, size):
         temp_rect = pygame.Rect(
             pos[0] - size[0] / 2, pos[1] - size[1] / 2, size[0], size[1]
@@ -523,3 +626,6 @@ class Player(pygame.sprite.Sprite):
 
         self.move(dt)
         self.rotate()
+
+
+# menu, tinh thue, tkinter
