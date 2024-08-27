@@ -251,13 +251,23 @@ class Player(pygame.sprite.Sprite):
                                     )
                                     if object_upgrade.button_upgrade.rect.collidepoint(
                                         exact_position_mouse
-                                    ) and self.entity_can_uprade(self.entity_clicked.level):
+                                    ) and self.entity_can_uprade(
+                                        self.entity_clicked.level
+                                    ):
                                         self.entity_clicked.request_upgrade()
                                         # reduce item
-                                        self.items_inventory[ITEM_GOLD] -= self.gold_cost
-                                        self.items_inventory[ITEM_WOOD] -= self.wood_cost
-                                        self.items_inventory[ITEM_STONE] -= self.stone_cost
-                                        self.items_inventory[ITEM_TOKEN] -= self.token_cost
+                                        self.items_inventory[
+                                            ITEM_GOLD
+                                        ] -= self.gold_cost
+                                        self.items_inventory[
+                                            ITEM_WOOD
+                                        ] -= self.wood_cost
+                                        self.items_inventory[
+                                            ITEM_STONE
+                                        ] -= self.stone_cost
+                                        self.items_inventory[
+                                            ITEM_TOKEN
+                                        ] -= self.token_cost
                                     elif object_upgrade.button_sell.rect.collidepoint(
                                         exact_position_mouse
                                     ):
@@ -413,12 +423,15 @@ class Player(pygame.sprite.Sprite):
         return
 
     def create_entity(self):
-        first_dash_position = self.selected_entity.find("-")
-        entity_name = self.selected_entity[first_dash_position + 1 :]
 
         if self.entity_can_uprade(0):
+            first_dash_position = self.selected_entity.find("-")
+            entity_name = self.selected_entity[first_dash_position + 1 :]
+
             pos_mouse_on_map = self.snap_to_grid_on_map()
+
             entity_type = self.get_entity_type()
+
             # create
             Entity(
                 pos=pos_mouse_on_map,
@@ -438,12 +451,12 @@ class Player(pygame.sprite.Sprite):
     def entity_can_uprade(self, entity_level):
         if entity_level == 9:
             return False
-        
+
         first_dash_position = self.selected_entity.find("-")
         entity_name = self.selected_entity[first_dash_position + 1 :]
 
         have_enough_condition = False
-        
+
         formatted_name = entity_name.replace("-", "").upper()
         for tower in TOWER_CONFIG:
             if tower["NAME"] == formatted_name:
@@ -454,14 +467,22 @@ class Player(pygame.sprite.Sprite):
 
                 has_enough_gold = int(self.items_inventory[ITEM_GOLD]) >= self.gold_cost
                 has_enough_wood = int(self.items_inventory[ITEM_WOOD]) >= self.wood_cost
-                has_enough_stone = int(self.items_inventory[ITEM_STONE]) >= self.stone_cost
-                has_enough_token = int(self.items_inventory[ITEM_TOKEN]) >= self.token_cost
+                has_enough_stone = (
+                    int(self.items_inventory[ITEM_STONE]) >= self.stone_cost
+                )
+                has_enough_token = (
+                    int(self.items_inventory[ITEM_TOKEN]) >= self.token_cost
+                )
 
-                have_enough_condition = has_enough_gold and has_enough_wood and has_enough_stone and has_enough_token
+                have_enough_condition = (
+                    has_enough_gold
+                    and has_enough_wood
+                    and has_enough_stone
+                    and has_enough_token
+                )
 
         return have_enough_condition
-        
-    
+
     def player_add_gold(self, quantity):
         self.items_inventory[ITEM_GOLD] += quantity
 
