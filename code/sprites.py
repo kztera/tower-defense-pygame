@@ -43,12 +43,11 @@ class Stone(Generic):
         self.player_add(ITEM_STONE)
 
         if have_impact:
-            self.diection_of_damage.x = self.rect.centerx - location_of_perpetrator.x
-            self.diection_of_damage.y = self.rect.centery - location_of_perpetrator.y
+            self.diection_of_damage.x = self.start_pos.x - location_of_perpetrator.x
+            self.diection_of_damage.y = self.start_pos.y - location_of_perpetrator.y
             self.diection_of_damage = self.diection_of_damage.normalize()
-            self.start_pos = pygame.math.Vector2(self.rect.center)
             self.end_pos = pygame.math.Vector2(
-                self.rect.center + self.diection_of_damage * 20
+                self.start_pos + self.diection_of_damage * 20
             )
             self.timer = 0
             self.moving_target = True
@@ -64,6 +63,7 @@ class Stone(Generic):
                         self.start_pos, self.end_pos, self.timer / 0.1
                     )
                 else:
+                    self.rect.center = self.end_pos
                     self.timer = 0
                     self.moving_target = False
             else:
@@ -73,6 +73,7 @@ class Stone(Generic):
                         self.end_pos, self.start_pos, self.timer / 0.1
                     )
                 else:
+                    self.rect.center = self.start_pos
                     self.taking_damage = False
 
 
@@ -89,7 +90,7 @@ class Tree(Generic):
         self.taking_damage = False
         self.moving_target = False
         self.diection_of_damage = pygame.math.Vector2()
-        self.start_pos = pygame.math.Vector2()
+        self.start_pos = pygame.math.Vector2(self.rect.center)
         self.end_pos = pygame.math.Vector2()
         self.timer = 0
 
@@ -100,12 +101,12 @@ class Tree(Generic):
         self.player_add(ITEM_WOOD)
 
         if have_impact:
-            self.diection_of_damage.x = self.rect.centerx - location_of_perpetrator.x
-            self.diection_of_damage.y = self.rect.centery - location_of_perpetrator.y
+            self.diection_of_damage.x = self.start_pos.x - location_of_perpetrator.x
+            self.diection_of_damage.y = self.start_pos.y - location_of_perpetrator.y
             self.diection_of_damage = self.diection_of_damage.normalize()
             self.start_pos = pygame.math.Vector2(self.rect.center)
             self.end_pos = pygame.math.Vector2(
-                self.rect.center + self.diection_of_damage * 20
+                self.start_pos + self.diection_of_damage * 20
             )
             self.timer = 0
             self.moving_target = True
@@ -121,6 +122,7 @@ class Tree(Generic):
                         self.start_pos, self.end_pos, self.timer / 0.1
                     )
                 else:
+                    self.rect.center = self.end_pos
                     self.timer = 0
                     self.moving_target = False
             else:
@@ -130,6 +132,7 @@ class Tree(Generic):
                         self.end_pos, self.start_pos, self.timer / 0.1
                     )
                 else:
+                    self.rect.center = self.start_pos
                     self.taking_damage = False
 
 
