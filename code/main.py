@@ -100,6 +100,8 @@ class Game:
             if self.is_day:
                 self.is_day = False
                 self.play_random_music(False)
+                # Upgrade wave
+                self.level.request_upgrade_wave()
 
             if current_time >= cycle_length - self.intersection_length:
                 progress = (

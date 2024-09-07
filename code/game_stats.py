@@ -38,6 +38,7 @@ TIME_FOR_ENTITY_SWITCH = 200
 ENTITY_TYPE_ATTACK = "attack"
 ENTITY_TYPE_DEFENSE = "defense"
 ENTITY_TYPE_PRODUCE = "produce"
+ENTITY_TYPE_BRAIN = "brain"
 
 # inventory
 ITEM_WOOD = "wood"

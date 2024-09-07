@@ -288,7 +288,10 @@ class Entity(Generic):
         return path_image
 
     def create_entity_head(self, player_add_gold):
-        if not self.entity_type is ENTITY_TYPE_DEFENSE:
+        if (
+            not self.entity_type is ENTITY_TYPE_DEFENSE
+            and not self.entity_type is ENTITY_TYPE_BRAIN
+        ):
             self.entity_head = Entity_Head(
                 pos=self.rect.center,
                 surf=pygame.Surface((0, 0)),

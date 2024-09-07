@@ -27,6 +27,8 @@ class Player(pygame.sprite.Sprite):
 
         self.all_sprites = group
         self.collision_sprites = collision_sprites
+
+        self.is_started = False
         self.current_wave = 0
 
         # general setup
@@ -73,7 +75,7 @@ class Player(pygame.sprite.Sprite):
             ENTITIES_GOLD_MINE,
             ENTITIES_GOLD_STASH,
         ]
-        self.entity_index = 0
+        self.entity_index = -1
         self.selected_entity = self.entities[self.entity_index]
 
         # timers
@@ -193,7 +195,7 @@ class Player(pygame.sprite.Sprite):
             self.sample_entity_image = None
 
         # use entity
-        if self.is_creating_entity:
+        if self.is_creating_entity and self.entity_index != -1:
             if self.sample_entity_image is None:
                 pos_mouse_on_map = self.snap_to_grid_on_map()
                 first_dash_position = self.selected_entity.find("-")
@@ -286,26 +288,31 @@ class Player(pygame.sprite.Sprite):
         # change entity
         if not self.timers[ENTITY_SWITCH_TIMER].active:
             change = True
-            if keys[pygame.K_1]:
-                self.entity_index = 0
-            elif keys[pygame.K_2]:
-                self.entity_index = 1
-            elif keys[pygame.K_3]:
-                self.entity_index = 2
-            elif keys[pygame.K_4]:
-                self.entity_index = 3
-            elif keys[pygame.K_5]:
-                self.entity_index = 4
-            elif keys[pygame.K_6]:
-                self.entity_index = 5
-            elif keys[pygame.K_7]:
-                self.entity_index = 6
-            elif keys[pygame.K_8]:
-                self.entity_index = 7
-            elif keys[pygame.K_9]:
-                self.entity_index = 8
+
+            if self.is_started:
+                if keys[pygame.K_1]:
+                    self.entity_index = 0
+                elif keys[pygame.K_2]:
+                    self.entity_index = 1
+                elif keys[pygame.K_3]:
+                    self.entity_index = 2
+                elif keys[pygame.K_4]:
+                    self.entity_index = 3
+                elif keys[pygame.K_5]:
+                    self.entity_index = 4
+                elif keys[pygame.K_6]:
+                    self.entity_index = 5
+                elif keys[pygame.K_7]:
+                    self.entity_index = 6
+                elif keys[pygame.K_8]:
+                    self.entity_index = 7
+                elif keys[pygame.K_9]:
+                    self.entity_index = 8
+                else:
+                    change = False
             else:
-                change = False
+                if keys[pygame.K_0]:
+                    self.entity_index = 9
 
             if change:
                 self.timers[ENTITY_SWITCH_TIMER].activate()
@@ -439,14 +446,12 @@ class Player(pygame.sprite.Sprite):
             if is_small_structure
             else (TILE_SIZE * 2, TILE_SIZE * 2)
         )
-
         # Kiểm tra va chạm
         if self.check_entity_collision(pos_mouse_on_map, size):
             return
 
         if self.entity_can_uprade(0):
             entity_type = self.get_entity_type()
-
             # create
             Entity(
                 pos=pos_mouse_on_map,
@@ -462,7 +467,14 @@ class Player(pygame.sprite.Sprite):
             self.items_inventory[ITEM_WOOD] -= self.wood_cost
             self.items_inventory[ITEM_STONE] -= self.stone_cost
             self.items_inventory[ITEM_TOKEN] -= self.token_cost
-
+            # Đã đặt bộ não
+            if entity_type == ENTITY_TYPE_BRAIN:
+                self.is_started = True
+                self.is_creating_entity = False
+                self.all_sprites.remove(self.sample_entity_image)
+                self.sample_entity_image = None
+                print("Started")
+            
     def entity_can_uprade(self, entity_level):
         if entity_level == 9:
             return False
@@ -542,17 +554,17 @@ class Player(pygame.sprite.Sprite):
 
     def get_entity_type(self):
         entity_type = ENTITY_TYPE_ATTACK
+
         if (
             self.selected_entity == ENTITIES_WALL
             or self.selected_entity == ENTITIES_DOOR
             or self.selected_entity == ENTITIES_SLOW_TRAP
         ):
             entity_type = ENTITY_TYPE_DEFENSE
-        elif (
-            self.selected_entity == ENTITIES_GOLD_MINE
-            or self.selected_entity == ENTITIES_GOLD_STASH
-        ):
+        elif self.selected_entity == ENTITIES_GOLD_MINE:
             entity_type = ENTITY_TYPE_PRODUCE
+        elif self.selected_entity == ENTITIES_GOLD_STASH:
+            entity_type = ENTITY_TYPE_BRAIN
         else:
             entity_type = ENTITY_TYPE_ATTACK
         return entity_type
@@ -619,6 +631,9 @@ class Player(pygame.sprite.Sprite):
     def update_timers(self):
         for timer in self.timers.values():
             timer.update()
+
+    def upgrade_wave(self):
+        self.current_wave += 1
 
     def update(self, dt):
         self.screen_height = pygame.display.get_surface().get_height()

@@ -78,6 +78,14 @@ class Level:
     def player_add(self, item):
         self.player.items_inventory[item] += 1
 
+    def request_upgrade_wave(self):
+        if self.player.is_started:
+            self.upgrade_wave()
+
+    def upgrade_wave(self):
+        self.player.upgrade_wave()
+        self.spawn_zombie()
+
     def spawn_zombie(self, dt):
         self.timer += dt
         if self.timer > self.spawnTime and self.spawning_zombie == False:
@@ -95,10 +103,6 @@ class Level:
         self.display_surface.fill("black")
         self.all_sprites.custom_draw(self.player)
         self.all_sprites.update(dt)
-
-
-        self.spawn_zombie(dt)
-
 
         self.overlay.display()
         # print(self.player.items_inventory)
