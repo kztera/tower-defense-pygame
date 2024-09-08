@@ -19,6 +19,7 @@ class Player(pygame.sprite.Sprite):
         stone_sprites,
         entity_sprites,
         zombie_sprites,
+        brain_sprites,
     ):
         super().__init__(group)
 
@@ -30,6 +31,7 @@ class Player(pygame.sprite.Sprite):
 
         self.is_started = False
         self.current_wave = 0
+        self.brain_sprites = brain_sprites
 
         # general setup
         self.image = pygame.image.load(
@@ -94,9 +96,9 @@ class Player(pygame.sprite.Sprite):
 
         # inventory
         self.items_inventory = {
-            ITEM_WOOD: 0,
-            ITEM_STONE: 0,
-            ITEM_GOLD: 0,
+            ITEM_WOOD: 100,
+            ITEM_STONE: 100,
+            ITEM_GOLD: 100,
             ITEM_TOKEN: 0,
         }
 
@@ -190,6 +192,7 @@ class Player(pygame.sprite.Sprite):
             )
             self.selected_tool = self.tools[self.tool_index]
             changing_tool = False
+            #
             self.is_creating_entity = False
             self.all_sprites.remove(self.sample_entity_image)
             self.sample_entity_image = None
@@ -313,6 +316,8 @@ class Player(pygame.sprite.Sprite):
             else:
                 if keys[pygame.K_0]:
                     self.entity_index = 9
+                else:
+                    change = False
 
             if change:
                 self.timers[ENTITY_SWITCH_TIMER].activate()
@@ -453,28 +458,45 @@ class Player(pygame.sprite.Sprite):
         if self.entity_can_uprade(0):
             entity_type = self.get_entity_type()
             # create
-            Entity(
-                pos=pos_mouse_on_map,
-                surf=pygame.Surface((0, 0)),
-                groups=[self.all_sprites, self.collision_sprites, self.entity_sprites],
-                entity_type=entity_type,
-                entity_name=entity_name,
-                zombie_sprites=self.zombie_sprites,
-                player_add_gold=self.player_add_gold,
-            )
+            if entity_type is ENTITY_TYPE_BRAIN:
+                brain_entity = Entity(
+                    pos=pos_mouse_on_map,
+                    surf=pygame.Surface((0, 0)),
+                    groups=[self.all_sprites, self.collision_sprites],
+                    entity_type=entity_type,
+                    entity_name=entity_name,
+                    zombie_sprites=self.zombie_sprites,
+                    player_add_gold=self.player_add_gold,
+                )
+
+                self.brain_sprites.add(brain_entity)
+            else:
+                Entity(
+                    pos=pos_mouse_on_map,
+                    surf=pygame.Surface((0, 0)),
+                    groups=[
+                        self.all_sprites,
+                        self.collision_sprites,
+                        self.entity_sprites,
+                    ],
+                    entity_type=entity_type,
+                    entity_name=entity_name,
+                    zombie_sprites=self.zombie_sprites,
+                    player_add_gold=self.player_add_gold,
+                )
             # reduce item
             self.items_inventory[ITEM_GOLD] -= self.gold_cost
             self.items_inventory[ITEM_WOOD] -= self.wood_cost
             self.items_inventory[ITEM_STONE] -= self.stone_cost
             self.items_inventory[ITEM_TOKEN] -= self.token_cost
             # Đã đặt bộ não
-            if entity_type == ENTITY_TYPE_BRAIN:
+            if entity_type is ENTITY_TYPE_BRAIN:
                 self.is_started = True
                 self.is_creating_entity = False
                 self.all_sprites.remove(self.sample_entity_image)
                 self.sample_entity_image = None
                 print("Started")
-            
+
     def entity_can_uprade(self, entity_level):
         if entity_level == 9:
             return False

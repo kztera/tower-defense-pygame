@@ -21,7 +21,7 @@ class Level:
         self.stone_sprites = pygame.sprite.Group()
         self.entity_sprites = pygame.sprite.Group()
         self.zombie_sprites = pygame.sprite.Group()
-
+        self.brain_sprites = pygame.sprite.Group()
         #
         self.spawning_zombie = False
         self.timer = 0.0
@@ -65,6 +65,7 @@ class Level:
                     stone_sprites=self.stone_sprites,
                     entity_sprites=self.entity_sprites,
                     zombie_sprites=self.zombie_sprites,
+                    brain_sprites=self.brain_sprites
                 )
 
         # create ground
@@ -86,18 +87,19 @@ class Level:
         self.player.upgrade_wave()
         self.spawn_zombie()
 
-    def spawn_zombie(self, dt):
-        self.timer += dt
-        if self.timer > self.spawnTime and self.spawning_zombie == False:
-            Zombie(
-                pos=self.player.pos,
-                surf=pygame.image.load(ASSET_PATH_ZOMBIES),
-                groups=[self.all_sprites, self.collision_sprites, self.zombie_sprites],
-                entity_sprites=self.entity_sprites,
-            )
-            self.timer = 0.0
-            self.spawning_zombie = True
-            print("Spawn Zombie")
+    def spawn_zombie(self):
+        zombie_spawnpos = pygame.Vector2(self.player.pos)
+        zombie_spawnpos.x += 20
+        zombie_spawnpos.y += 20
+
+        Zombie(
+            pos=zombie_spawnpos,
+            surf=pygame.image.load(ASSET_PATH_ZOMBIES),
+            groups=[self.all_sprites, self.collision_sprites, self.zombie_sprites],
+            entity_sprites=self.entity_sprites,
+            brain_sprites=self.brain_sprites
+        )
+        print("Spawn Zombie")
 
     def run(self, dt):
         self.display_surface.fill("black")

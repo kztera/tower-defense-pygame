@@ -147,9 +147,7 @@ class Overlay:
 
         wave_text = "WAVE"
         wave_number = (
-            # self.player.current_wave chỉ khi căn cứ được đặt thì mới bắt đầu dùng
             f"{self.player.current_wave}"
-            #"-"
         )
         wave_surf = self.font_text.render(wave_text, True, font_color)
         number_surf = self.font_text.render(wave_number, True, font_color)
