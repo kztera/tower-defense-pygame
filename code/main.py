@@ -27,8 +27,8 @@ class Game:
             (SCREEN_WIDTH_DEFAULT, SCREEN_HEIGHT_DEFAULT)
         )
         self.day_night_surface.set_alpha(0)
-        self.day_length = 75
-        self.night_length = 75
+        self.day_length = 10
+        self.night_length = 10
         self.intersection_length = 15
         self.time_elapsed = 0
 
@@ -100,6 +100,8 @@ class Game:
             if self.is_day:
                 self.is_day = False
                 self.play_random_music(False)
+                # Upgrade wave
+                self.level.request_upgrade_wave()
 
             if current_time >= cycle_length - self.intersection_length:
                 progress = (

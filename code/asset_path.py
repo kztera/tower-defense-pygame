@@ -31,7 +31,7 @@ ASSET_PATH_ENTITIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/entities/")
 
 # asset path : zombie
 ASSET_PATH_ZOMBIES = os.path.join(
-    ROOT_FOLDER_PATH, "../graphics/zombies/zombie-boss.png"
+    ROOT_FOLDER_PATH, "../graphics/zombies/"
 )
 
 ASSET_MUSIC_DAY = os.path.join(ROOT_FOLDER_PATH, "../audio/day/")

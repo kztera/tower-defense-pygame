@@ -6,6 +6,10 @@ from pytmx.util_pygame import load_pygame
 from player import Player
 from overlay import Overlay
 from sprites import Generic, Stone, Tree, Zombie
+from zombie_config import *
+import math
+import random
+from game_stats import *
 
 
 class Level:
@@ -21,7 +25,7 @@ class Level:
         self.stone_sprites = pygame.sprite.Group()
         self.entity_sprites = pygame.sprite.Group()
         self.zombie_sprites = pygame.sprite.Group()
-
+        self.brain_sprites = pygame.sprite.Group()
         #
         self.spawning_zombie = False
         self.timer = 0.0
@@ -65,6 +69,7 @@ class Level:
                     stone_sprites=self.stone_sprites,
                     entity_sprites=self.entity_sprites,
                     zombie_sprites=self.zombie_sprites,
+                    brain_sprites=self.brain_sprites,
                 )
 
         # create ground
@@ -78,27 +83,83 @@ class Level:
     def player_add(self, item):
         self.player.items_inventory[item] += 1
 
-    def spawn_zombie(self, dt):
-        self.timer += dt
-        if self.timer > self.spawnTime and self.spawning_zombie == False:
-            Zombie(
-                pos=self.player.pos,
-                surf=pygame.image.load(ASSET_PATH_ZOMBIES),
-                groups=[self.all_sprites, self.collision_sprites, self.zombie_sprites],
-                entity_sprites=self.entity_sprites,
-            )
-            self.timer = 0.0
-            self.spawning_zombie = True
-            print("Spawn Zombie")
+    def request_upgrade_wave(self):
+        if self.player.is_started:
+            self.upgrade_wave()
+
+    def upgrade_wave(self):
+        self.player.upgrade_wave()
+        self.spawn_zombie()
+
+    def spawn_zombie(self):
+        sprite_list = list(self.brain_sprites)
+        if len(sprite_list) < 1:
+            return
+
+        brain_pos = pygame.math.Vector2(sprite_list[0].rect.center)
+        range_spawn_min = 400
+        range_spawn_max = 1000
+        distance_entity_to_brain = 0
+        for entity in self.entity_sprites:
+            target_pos = pygame.math.Vector2(entity.rect.center)
+            distance = brain_pos.distance_to(target_pos)
+            if distance > distance_entity_to_brain:
+                distance_entity_to_brain = distance
+        #
+        for zombie in ZOMBIE_CONFIG:
+            waves = zombie["WAVES"]
+            can_spawn = False
+            wave_start, wave_end = waves.split("-")
+            wave_start = int(wave_start)
+            if wave_end is "":
+                if wave_start <= self.player.current_wave:
+                    can_spawn = True
+            else:
+                wave_end = int(wave_end)
+                if wave_start <= self.player.current_wave <= wave_end:
+                    can_spawn = True
+            #
+            path_zombie = ASSET_PATH_ZOMBIES
+            model_name = ((zombie["MODEL"]).split("Tier")[0]).upper()
+            for zombie_name in ZOMBIE_ARRAYS:
+                if (zombie_name.replace("-", "")).upper() == model_name:
+                    path_zombie += zombie_name + "/" + zombie_name + "-t7-weapon.png"
+            # heath, damage, speed, firerate
+            health_zombie = zombie["HEALTH"]
+            speed_zombie = float(zombie["SPEED"]) * 10
+            firerate_zombie = float(zombie["FIRERATE"]) / 1000
+            #
+            if can_spawn:
+                amount = zombie["AMOUNT"]
+                for x in range(0, amount):
+                    distance_entity_to_brain = distance
+                    distance_entity_to_brain += random.uniform(range_spawn_min, range_spawn_max)
+                    angle = random.uniform(0, 360)
+                    radian = math.radians(angle)
+                    new_x = brain_pos.x + distance_entity_to_brain * math.cos(radian)
+                    new_y = brain_pos.y + distance_entity_to_brain * math.sin(radian)
+                    zombie_spawnpos = pygame.Vector2(new_x, new_y)
+                    # spawn
+                    Zombie(
+                        pos=zombie_spawnpos,
+                        surf=pygame.image.load(path_zombie),
+                        groups=[
+                            self.all_sprites,
+                            self.collision_sprites,
+                            self.zombie_sprites,
+                        ],
+                        entity_sprites=self.entity_sprites,
+                        brain_sprites=self.brain_sprites,
+                        max_heath=health_zombie,
+                        speed=speed_zombie,
+                        firerate=firerate_zombie
+                    )
+                    print("Spawn Zombie")
 
     def run(self, dt):
         self.display_surface.fill("black")
         self.all_sprites.custom_draw(self.player)
         self.all_sprites.update(dt)
-
-
-        self.spawn_zombie(dt)
-
 
         self.overlay.display()
         # print(self.player.items_inventory)

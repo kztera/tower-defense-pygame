@@ -38,6 +38,7 @@ TIME_FOR_ENTITY_SWITCH = 200
 ENTITY_TYPE_ATTACK = "attack"
 ENTITY_TYPE_DEFENSE = "defense"
 ENTITY_TYPE_PRODUCE = "produce"
+ENTITY_TYPE_BRAIN = "brain"
 
 # inventory
 ITEM_WOOD = "wood"
@@ -52,6 +53,25 @@ FONT_LUCKIEST_GUY = "LuckiestGuy-Regular"
 #
 HEALTH_BAR_WIDTH = 50
 HEALTH_BAR_HEIGHT = 10
+
+# zombie
+ZOMBIE_BLUE = "zombie-blue"
+ZOMBIE_GREEN = "zombie-green"
+ZOMBIE_ORANGE = "zombie-orange"
+ZOMBIE_PURPLE = "zombie-purple"
+ZOMBIE_RED = "zombie-red"
+ZOMBIE_YELLOW = "zombie-yellow"
+ZOMBIE_BOSS = "zombie-boss"
+
+ZOMBIE_ARRAYS = {
+    ZOMBIE_BLUE,
+    ZOMBIE_GREEN,
+    ZOMBIE_ORANGE,
+    ZOMBIE_PURPLE,
+    ZOMBIE_RED,
+    ZOMBIE_YELLOW,
+    ZOMBIE_BOSS
+}
 
 
 """
