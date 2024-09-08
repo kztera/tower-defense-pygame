@@ -458,32 +458,17 @@ class Player(pygame.sprite.Sprite):
         if self.entity_can_uprade(0):
             entity_type = self.get_entity_type()
             # create
+            brain_entity = Entity(
+                pos=pos_mouse_on_map,
+                surf=pygame.Surface((0, 0)),
+                groups=[self.all_sprites, self.collision_sprites, self.entity_sprites],
+                entity_type=entity_type,
+                entity_name=entity_name,
+                zombie_sprites=self.zombie_sprites,
+                player_add_gold=self.player_add_gold,
+            )
             if entity_type is ENTITY_TYPE_BRAIN:
-                brain_entity = Entity(
-                    pos=pos_mouse_on_map,
-                    surf=pygame.Surface((0, 0)),
-                    groups=[self.all_sprites, self.collision_sprites],
-                    entity_type=entity_type,
-                    entity_name=entity_name,
-                    zombie_sprites=self.zombie_sprites,
-                    player_add_gold=self.player_add_gold,
-                )
-
                 self.brain_sprites.add(brain_entity)
-            else:
-                Entity(
-                    pos=pos_mouse_on_map,
-                    surf=pygame.Surface((0, 0)),
-                    groups=[
-                        self.all_sprites,
-                        self.collision_sprites,
-                        self.entity_sprites,
-                    ],
-                    entity_type=entity_type,
-                    entity_name=entity_name,
-                    zombie_sprites=self.zombie_sprites,
-                    player_add_gold=self.player_add_gold,
-                )
             # reduce item
             self.items_inventory[ITEM_GOLD] -= self.gold_cost
             self.items_inventory[ITEM_WOOD] -= self.wood_cost

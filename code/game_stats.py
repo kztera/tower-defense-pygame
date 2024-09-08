@@ -54,6 +54,25 @@ FONT_LUCKIEST_GUY = "LuckiestGuy-Regular"
 HEALTH_BAR_WIDTH = 50
 HEALTH_BAR_HEIGHT = 10
 
+# zombie
+ZOMBIE_BLUE = "zombie-blue"
+ZOMBIE_GREEN = "zombie-green"
+ZOMBIE_ORANGE = "zombie-orange"
+ZOMBIE_PURPLE = "zombie-purple"
+ZOMBIE_RED = "zombie-red"
+ZOMBIE_YELLOW = "zombie-yellow"
+ZOMBIE_BOSS = "zombie-boss"
+
+ZOMBIE_ARRAYS = {
+    ZOMBIE_BLUE,
+    ZOMBIE_GREEN,
+    ZOMBIE_ORANGE,
+    ZOMBIE_PURPLE,
+    ZOMBIE_RED,
+    ZOMBIE_YELLOW,
+    ZOMBIE_BOSS
+}
+
 
 """
 # Description: This file contains the configuration for all the towers in the game.

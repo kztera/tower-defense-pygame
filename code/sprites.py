@@ -685,7 +685,7 @@ class HealthBar(pygame.sprite.Sprite):
 
 # ZOMBIE
 class Zombie(Generic):
-    def __init__(self, pos, surf, groups, entity_sprites, brain_sprites, z=LAYERS[LAYER_ZOMBIE]):
+    def __init__(self, pos, surf, groups, entity_sprites, brain_sprites, max_heath, speed, firerate, z=LAYERS[LAYER_ZOMBIE]):
         super().__init__(pos, surf, groups, z)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate(
@@ -699,7 +699,7 @@ class Zombie(Generic):
         self.direction = pygame.math.Vector2()
         self.default_image = surf
         self.current_angle = 0
-        self.speed = 100
+        self.speed = speed
 
         # damage
         self.attacking = False
@@ -709,7 +709,7 @@ class Zombie(Generic):
         self.attack_distance = 100
         self.entity_sprites = entity_sprites
         self.timer = 0
-        self.cooldown = 1
+        self.firerate = firerate
         self.direction_attack = DIRECTION_DOWN
         self.attack_pos = USE_TOOL_OFFSET[DIRECTION_DOWN]
         self.has_caused_damage = False
@@ -717,7 +717,7 @@ class Zombie(Generic):
 
         # health
         self.dead = False
-        self.max_health = 1000000
+        self.max_health = max_heath
         self.health = self.max_health
 
         self.health_bar_distance = 50
@@ -766,7 +766,7 @@ class Zombie(Generic):
                     self.timer = 0
                 else:
                     self.timer += dt
-                    if self.timer >= self.cooldown:
+                    if self.timer >= self.firerate:
                         self.attacking = False
         else:
             self.current_angle = self.calculate_angle()
@@ -891,7 +891,6 @@ class Zombie(Generic):
 
 
 # UPGRADE
-
 
 class Upgrade(pygame.sprite.Sprite):
     def __init__(
