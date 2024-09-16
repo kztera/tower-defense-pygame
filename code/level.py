@@ -111,7 +111,7 @@ class Level:
             can_spawn = False
             wave_start, wave_end = waves.split("-")
             wave_start = int(wave_start)
-            if wave_end is "":
+            if wave_end == "":
                 if wave_start <= self.player.current_wave:
                     can_spawn = True
             else:
@@ -123,11 +123,14 @@ class Level:
             model_name = ((zombie["MODEL"]).split("Tier")[0]).upper()
             for zombie_name in ZOMBIE_ARRAYS:
                 if (zombie_name.replace("-", "")).upper() == model_name:
-                    path_zombie += zombie_name + "/" + zombie_name + "-t7-weapon.png"
+                    path_zombie += zombie_name + "/" + zombie_name + "-t" + str(sprite_list[0].level) + "-weapon.png"
+                    
             # heath, damage, speed, firerate
             health_zombie = zombie["HEALTH"]
             speed_zombie = float(zombie["SPEED"]) * 10
             firerate_zombie = float(zombie["FIRERATE"]) / 1000
+            deals_zombie = float(zombie["DEALS"]) / 1000
+
             #
             if can_spawn:
                 amount = zombie["AMOUNT"]
@@ -152,7 +155,8 @@ class Level:
                         brain_sprites=self.brain_sprites,
                         max_heath=health_zombie,
                         speed=speed_zombie,
-                        firerate=firerate_zombie
+                        firerate=firerate_zombie,
+                        damage=deals_zombie
                     )
                     print("Spawn Zombie")
 
