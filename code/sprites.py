@@ -161,7 +161,6 @@ class Sample_Entity(Generic):
         is_small_structure = self.player.selected_entity in [
             ENTITIES_WALL,
             ENTITIES_DOOR,
-            ENTITIES_SLOW_TRAP,
         ]
 
         if is_small_structure:
@@ -186,7 +185,6 @@ class Sample_Entity(Generic):
         is_small_structure = self.player.selected_entity in [
             ENTITIES_WALL,
             ENTITIES_DOOR,
-            ENTITIES_SLOW_TRAP,
         ]
         size = (
             (TILE_SIZE, TILE_SIZE)
@@ -446,6 +444,7 @@ class Entity_Head(Generic):
         self.default_image = self.image
         self.current_angle = 0
         self.direction = pygame.math.Vector2()
+        self.rotation_angle_timer = 0.0
         #
         self.projectile_surf = None
         self.target = None
@@ -519,7 +518,7 @@ class Entity_Head(Generic):
             angle_degrees += 360
         return angle_degrees
 
-    def update_direction(self):
+    def update_direction_target(self):
         if not self.target is None:
             # angle
             self.current_angle = self.calculate_current_angle()
@@ -527,6 +526,12 @@ class Entity_Head(Generic):
                 self.default_image, self.current_angle, 1
             )
             self.rect = self.image.get_rect(center=self.rect.center)
+
+    def update_direction_rotate360(self):
+        self.image = pygame.transform.rotozoom(
+            self.default_image, self.current_angle, 1
+        )
+        self.rect = self.image.get_rect(center=self.rect.center)
 
     def create_entity_projectile(self):
         Entity_Projectile(
@@ -588,15 +593,22 @@ class Entity_Head(Generic):
         self.kill()
 
     def update(self, dt):
-        self.pick_tartget()
-        self.update_direction()
-
-        if self.entity_type == ENTITY_TYPE_ATTACK and not self.target is None:
-            self.timer += dt
-            if self.timer >= self.ms_between_fire:
-                self.create_entity_projectile()
-                self.timer = 0
+        if self.entity_type == ENTITY_TYPE_ATTACK:
+            self.pick_tartget()
+            self.update_direction_target()
+            if not self.target is None:
+                self.timer += dt
+                if self.timer >= self.ms_between_fire:
+                    self.create_entity_projectile()
+                    self.timer = 0
         elif self.entity_type == ENTITY_TYPE_PRODUCE:
+            self.rotation_angle_timer += dt
+            if self.rotation_angle_timer >= 0.1:
+                self.current_angle += 1
+                if self.current_angle >= 360:
+                    self.current_angle = 0
+                self.update_direction_rotate360()
+            #
             self.timer += dt
             if self.timer >= 1:
                 self.player_add_gold(self.gold_per_second)
@@ -685,7 +697,19 @@ class HealthBar(pygame.sprite.Sprite):
 
 # ZOMBIE
 class Zombie(Generic):
-    def __init__(self, pos, surf, groups, entity_sprites, brain_sprites, max_heath, speed, firerate, z=LAYERS[LAYER_ZOMBIE]):
+    def __init__(
+        self,
+        pos,
+        surf,
+        groups,
+        entity_sprites,
+        brain_sprites,
+        max_heath,
+        speed,
+        firerate,
+        damage,
+        z=LAYERS[LAYER_ZOMBIE],
+    ):
         super().__init__(pos, surf, groups, z)
         self.rect = self.image.get_rect(center=pos)
         self.hitbox = self.rect.copy().inflate(
@@ -713,7 +737,7 @@ class Zombie(Generic):
         self.direction_attack = DIRECTION_DOWN
         self.attack_pos = USE_TOOL_OFFSET[DIRECTION_DOWN]
         self.has_caused_damage = False
-        self.damage = 50
+        self.damage = damage
 
         # health
         self.dead = False
@@ -841,7 +865,7 @@ class Zombie(Generic):
             sprite_list = list(self.brain_sprites)
             if len(sprite_list) > 0:
                 self.target = sprite_list[0]
-            
+
         if self.target is None:
             self.attacking = False
         else:
@@ -891,6 +915,7 @@ class Zombie(Generic):
 
 
 # UPGRADE
+
 
 class Upgrade(pygame.sprite.Sprite):
     def __init__(

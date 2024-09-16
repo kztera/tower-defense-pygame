@@ -68,12 +68,10 @@ class Player(pygame.sprite.Sprite):
         self.entities = [
             ENTITIES_WALL,
             ENTITIES_DOOR,
-            ENTITIES_SLOW_TRAP,
             ENTITIES_ARROW_TOWER,
             ENTITIES_BOMB_TOWER,
             ENTITIES_CANNON_TOWER,
             ENTITIES_MAGE_TOWER,
-            ENTITIES_MELEE_TOWER,
             ENTITIES_GOLD_MINE,
             ENTITIES_GOLD_STASH,
         ]
@@ -307,15 +305,11 @@ class Player(pygame.sprite.Sprite):
                     self.entity_index = 5
                 elif keys[pygame.K_7]:
                     self.entity_index = 6
-                elif keys[pygame.K_8]:
-                    self.entity_index = 7
-                elif keys[pygame.K_9]:
-                    self.entity_index = 8
                 else:
                     change = False
             else:
                 if keys[pygame.K_0]:
-                    self.entity_index = 9
+                    self.entity_index = 7
                 else:
                     change = False
 
@@ -444,7 +438,6 @@ class Player(pygame.sprite.Sprite):
         is_small_structure = self.selected_entity in [
             ENTITIES_WALL,
             ENTITIES_DOOR,
-            ENTITIES_SLOW_TRAP,
         ]
         size = (
             (TILE_SIZE, TILE_SIZE)
@@ -531,7 +524,6 @@ class Player(pygame.sprite.Sprite):
         is_small_structure = self.selected_entity in [
             ENTITIES_WALL,
             ENTITIES_DOOR,
-            ENTITIES_SLOW_TRAP,
         ]
 
         if is_small_structure:
@@ -565,7 +557,6 @@ class Player(pygame.sprite.Sprite):
         if (
             self.selected_entity == ENTITIES_WALL
             or self.selected_entity == ENTITIES_DOOR
-            or self.selected_entity == ENTITIES_SLOW_TRAP
         ):
             entity_type = ENTITY_TYPE_DEFENSE
         elif self.selected_entity == ENTITIES_GOLD_MINE:
