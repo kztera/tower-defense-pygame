@@ -33,6 +33,7 @@ class Overlay:
             OVERLAY_TOOL: (current_width / 2, current_height - 150),
             OVERLAY_ENTITY: (current_width / 2, current_height - 70),
             ITEM_INVENTORY: (current_width - 200, current_height - 200),
+            OVERLAY_LEADERBOARD: (current_width / 2, current_height + 100),
         }
 
         self._display_items(
@@ -146,9 +147,7 @@ class Overlay:
             self.display_surface.blit(value_surf, value_rect)
 
         wave_text = "WAVE"
-        wave_number = (
-            f"{self.player.current_wave}"
-        )
+        wave_number = f"{self.player.current_wave}"
         wave_surf = self.font_text.render(wave_text, True, font_color)
         number_surf = self.font_text.render(wave_number, True, font_color)
 

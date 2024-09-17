@@ -10,6 +10,7 @@ from zombie_config import *
 import math
 import random
 from game_stats import *
+from game_data import *
 
 
 class Level:
@@ -26,6 +27,10 @@ class Level:
         self.entity_sprites = pygame.sprite.Group()
         self.zombie_sprites = pygame.sprite.Group()
         self.brain_sprites = pygame.sprite.Group()
+
+        #
+        self.game_data = GameData()
+
         #
         self.spawning_zombie = False
         self.timer = 0.0

@@ -4,6 +4,7 @@ from level import Level
 from asset_path import *
 from game_stats import *
 import random
+from sprites import Button
 
 
 class Game:
@@ -13,11 +14,19 @@ class Game:
             (SCREEN_WIDTH_DEFAULT, SCREEN_HEIGHT_DEFAULT), pygame.RESIZABLE
         )
         pygame.display.set_caption("Tower Defense PyGame")
+
+        # started game
+        self.game_started = False
+        # self.start_button = 
+        self.screen.blit()
+
+        # sound
         self.default_volume = 0.5
         self.current_volume = self.default_volume
         self.display_surface = pygame.display.get_surface()
         self.time_bar_x = self.display_surface.get_width() - 100
 
+        # time
         self.clock = pygame.time.Clock()
         self.level = Level()
         self.night_count = 0
@@ -163,11 +172,14 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
-            dt = self.clock.tick() / 1000
-            self.level.run(dt)
-            self.update_day_night_cycle(dt)
-            self.draw_day_night_bar()
-            pygame.display.update()
+            if self.game_started:
+                dt = self.clock.tick() / 1000
+                self.level.run(dt)
+                self.update_day_night_cycle(dt)
+                self.draw_day_night_bar()
+                pygame.display.update()
+            else:
+                
 
 
 if __name__ == "__main__":
