@@ -20,6 +20,7 @@ class Player(pygame.sprite.Sprite):
         entity_sprites,
         zombie_sprites,
         brain_sprites,
+        level_map,
     ):
         super().__init__(group)
 
@@ -32,6 +33,7 @@ class Player(pygame.sprite.Sprite):
         self.is_started = False
         self.current_wave = 0
         self.brain_sprites = brain_sprites
+        self.level_map = level_map
 
         # general setup
         self.image = pygame.image.load(
@@ -491,6 +493,8 @@ class Player(pygame.sprite.Sprite):
                 entity_type=entity_type,
                 entity_name=entity_name,
                 zombie_sprites=self.zombie_sprites,
+                brain_sprites=self.brain_sprites,
+                level_map=self.level_map,
                 player_add_gold=self.player_add_gold,
                 player_reduct_entity_count=self.player_reduct_entity_count,
             )
@@ -510,8 +514,6 @@ class Player(pygame.sprite.Sprite):
                 self.is_creating_entity = False
                 self.all_sprites.remove(self.sample_entity_image)
                 self.sample_entity_image = None
-
-            print(self.entity_count)
 
     def entity_can_uprade(self, entity_level):
         if entity_level == 9:

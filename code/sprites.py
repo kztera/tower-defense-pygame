@@ -215,6 +215,8 @@ class Entity(Generic):
         entity_type,
         entity_name,
         zombie_sprites,
+        brain_sprites,
+        level_map,
         player_add_gold,
         player_reduct_entity_count,
         z=LAYERS[LAYER_ENTITY_BASE],
@@ -225,6 +227,8 @@ class Entity(Generic):
         self.entity_type = entity_type
         self.entity_name = entity_name
         self.zombie_sprites = zombie_sprites
+        self.brain_sprites = brain_sprites
+        self.level_map = level_map
         # level
         self.level = 1
         self.max_level = 1
@@ -320,8 +324,10 @@ class Entity(Generic):
             )
 
     def take_damage(self, damage):
-        self.health -= damage
-        self.regen_timer = 0.0
+        if self.health > 0:
+            self.health -= damage
+            self.regen_timer = 0.0
+        # check dead
         if self.health <= 0:
             self.destroy_self()
 
@@ -408,7 +414,12 @@ class Entity(Generic):
         self.entity_head.upgrade()
 
     def destroy_self(self):
-        self.player_reduct_entity_count(self.entity_name)
+        if self.entity_type is ENTITY_TYPE_BRAIN:
+            print("Loser")
+            self.level_map.end_game()
+
+        else:
+            self.player_reduct_entity_count(self.entity_name)
         #
         self.healthBar_background.kill()
         self.healthBar.kill()
@@ -581,7 +592,7 @@ class Entity_Head(Generic):
 
         if not has_target:
             self.target = None
-
+            
     def upgrade(self):
         self.level += 1
         #
@@ -894,6 +905,10 @@ class Zombie(Generic):
             sprite_list = list(self.brain_sprites)
             if len(sprite_list) > 0:
                 self.target = sprite_list[0]
+            else:
+                self.attacking = False
+                self.target = None
+                return
 
         if self.target is None:
             self.attacking = False

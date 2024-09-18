@@ -30,13 +30,21 @@ ASSET_PATH_FONT = os.path.join(ROOT_FOLDER_PATH, "../font/")
 ASSET_PATH_ENTITIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/entities/")
 
 # asset path : zombie
-ASSET_PATH_ZOMBIES = os.path.join(
-    ROOT_FOLDER_PATH, "../graphics/zombies/"
-)
+ASSET_PATH_ZOMBIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/zombies/")
 
 ASSET_MUSIC_DAY = os.path.join(ROOT_FOLDER_PATH, "../audio/day/")
 
 ASSET_MUSIC_NIGHT = os.path.join(ROOT_FOLDER_PATH, "../audio/night/")
 
 # asset path : ui button
-ASSET_PATH_START_BUTTON = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/start_button.png")
+ASSET_PATH_START_BUTTON = os.path.join(
+    ROOT_FOLDER_PATH, "../graphics/ui/start_button.png"
+)
+
+ASSET_PATH_NEW_GAME_BUTTON = os.path.join(
+    ROOT_FOLDER_PATH, "../graphics/ui/new_game.png"
+)
+
+ASSET_PATH_EXIT_BUTTON = os.path.join(
+    ROOT_FOLDER_PATH, "../graphics/ui/exit_button.png"
+)

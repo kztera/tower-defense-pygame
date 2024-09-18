@@ -172,9 +172,10 @@ class Game:
                         sys.exit()
 
             dt = self.clock.tick() / 1000
+
             self.level.run(dt)
 
-            if self.level.game_started:
+            if self.level.game_started and self.level.game_over == False:
                 self.update_day_night_cycle(dt)
                 self.draw_day_night_bar()
 
