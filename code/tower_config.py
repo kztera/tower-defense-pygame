@@ -202,8 +202,8 @@ TOWER_CONFIG = [
         "PROJECTILECOUNT": [1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     {
-        "NAME": "MAGICTOWER",
-        "CLASS": "MAGICTOWER",
+        "NAME": "MAGETOWER",
+        "CLASS": "MAGETOWER",
         "GOLDCOSTS": [0, 100, 200, 600, 1200, 2000, 8000, 35000, 100000],
         "WOODCOSTS": [15, 25, 40, 50, 70, 100, 300, 800, 2000],
         "STONECOSTS": [15, 25, 40, 50, 70, 100, 300, 800, 2000],
@@ -259,8 +259,8 @@ TOWER_CONFIG = [
     },
 ]
 
-'''
+"""
             FIX 
 - Cần sửa lại thời gian bắn của các tháp
 - Khoảng cách tấn công của các tháp
-'''
+"""
