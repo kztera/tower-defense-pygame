@@ -1,4 +1,4 @@
-import pygame
+import pygame, sys
 from settings import *
 from asset_path import *
 from pytmx.util_pygame import load_pygame
@@ -25,6 +25,7 @@ class Level:
 
         # started game
         self.game_started = False
+        self.game_over = False
 
         # game name text
         game_text_pos = pygame.Vector2(
@@ -71,10 +72,37 @@ class Level:
         self.spawnTime = 2
 
         # setup
+        self.player = None
         self.setup()
 
         # create overlay
         self.overlay = Overlay(player=self.player, game_data=self.game_data)
+
+        # game over text
+        game_over_text_pos = pygame.Vector2(
+            SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
+        )
+        game_over_text_pos.y -= 150
+        self.game_over_text = game_font.render("GAME OVER", True, (255, 255, 255))
+        self.game_over_text_rect = self.game_over_text.get_rect(
+            center=game_over_text_pos
+        )
+
+        # new game button
+        pos_button_new_game = pygame.Vector2(
+            SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
+        )
+        pos_button_new_game.y += 50
+        self.new_game_button = pygame.image.load(ASSET_PATH_NEW_GAME_BUTTON)
+        self.new_game_button_rect = self.new_game_button.get_rect(center=pos_button)
+
+        # exit button
+        pos_exit_button = pygame.Vector2(
+            SCREEN_WIDTH_DEFAULT / 2, SCREEN_HEIGHT_DEFAULT / 2
+        )
+        pos_exit_button.y += 150
+        self.exit_button = pygame.image.load(ASSET_PATH_EXIT_BUTTON)
+        self.exit_button_rect = self.start_button.get_rect(center=pos_exit_button)
 
     def setup(self):
         tmx_data = load_pygame(ASSET_PATH_MAP)
@@ -109,6 +137,7 @@ class Level:
                     entity_sprites=self.entity_sprites,
                     zombie_sprites=self.zombie_sprites,
                     brain_sprites=self.brain_sprites,
+                    level_map=self,
                 )
 
         # create ground
@@ -131,8 +160,10 @@ class Level:
         self.spawn_zombie()
 
     def spawn_zombie(self):
+        print("Spawn zombie")
         sprite_list = list(self.brain_sprites)
         if len(sprite_list) < 1:
+            print("No Spawn zombie")
             return
 
         brain_pos = pygame.math.Vector2(sprite_list[0].rect.center)
@@ -167,8 +198,8 @@ class Level:
                         + "/"
                         + zombie_name
                         + "-t"
-                        + str(sprite_list[0].level)
-                        + "-weapon.png"
+                        + str(sprite_list[0].level + 1)
+                        + ".png"
                     )
 
             # heath, damage, speed, firerate
@@ -215,49 +246,113 @@ class Level:
     def run(self, dt):
         self.display_surface.fill("black")
 
-        if self.game_started:
-            self.all_sprites.custom_draw(self.player)
-            self.all_sprites.update(dt)
-            self.overlay.display()
-        else:
-            #
-            mouse_pos = pygame.mouse.get_pos()
-            events = pygame.event.get(pygame.KEYDOWN)
-            if self.activate:
-                for event in events:
-                    if event.key == pygame.K_BACKSPACE:
-                        self.user_name = self.user_name[:-1]
-                    else:
-                        self.user_name += event.unicode
-                    self.user_text = self.base_font.render(
-                        self.user_name, True, (255, 255, 255)
-                    )
-                    self.user_text_rect = self.user_text.get_rect(center=self.pos_text)
+        mouse_pos = pygame.mouse.get_pos()
+        if self.game_over == False:
+            if self.game_started:
+                self.all_sprites.custom_draw(self.player)
+                self.all_sprites.update(dt)
+                self.overlay.display()
             else:
-                if input_rect.collidepoint(mouse_pos):
+                #
+                events = pygame.event.get(pygame.KEYDOWN)
+                if self.activate:
+                    for event in events:
+                        if event.key == pygame.K_BACKSPACE:
+                            self.user_name = self.user_name[:-1]
+                        else:
+                            self.user_name += event.unicode
+                        self.user_text = self.base_font.render(
+                            self.user_name, True, (255, 255, 255)
+                        )
+                        self.user_text_rect = self.user_text.get_rect(
+                            center=self.pos_text
+                        )
+                else:
+                    if input_rect.collidepoint(mouse_pos):
+                        if pygame.mouse.get_pressed()[0] == 1:
+                            self.activate = True
+
+                #
+                if self.start_button_rect.collidepoint(mouse_pos):
                     if pygame.mouse.get_pressed()[0] == 1:
-                        self.activate = True
+                        if self.user_name != "":
+                            self.game_started = True
 
-            #
-            if self.start_button_rect.collidepoint(mouse_pos):
+                # display
+                self.display_surface.blit(self.game_text, self.game_text_rect)
+                self.display_surface.blit(self.user_text, self.user_text_rect)
+                self.display_surface.blit(self.start_button, self.start_button_rect)
+                if self.activate:
+                    color = color_active
+                else:
+                    color = color_passive
+                input_rect.center = self.user_text_rect.center
+                pygame.draw.rect(self.display_surface, color, input_rect, 2)
+
+        else:
+            # new game
+            if self.new_game_button_rect.collidepoint(mouse_pos):
                 if pygame.mouse.get_pressed()[0] == 1:
-                    if self.user_name != "":
-                        self.game_started = True
-                        # CREATE DATA PLAYER
-                        # self.game_data.insert_data(
-                        #     self.user_name, self.player.score, self.player.current_wave
-                        # )
+                    self.new_game()
 
+            # exit
+            if self.exit_button_rect.collidepoint(mouse_pos):
+                if pygame.mouse.get_pressed()[0] == 1:
+                    self.exit_game()
             #
-            self.display_surface.blit(self.game_text, self.game_text_rect)
-            self.display_surface.blit(self.user_text, self.user_text_rect)
-            self.display_surface.blit(self.start_button, self.start_button_rect)
-            if self.activate:
-                color = color_active
-            else:
-                color = color_passive
-            input_rect.center = self.user_text_rect.center
-            pygame.draw.rect(self.display_surface, color, input_rect, 2)
+            self.display_surface.blit(self.game_over_text, self.game_over_text_rect)
+            self.display_surface.blit(self.new_game_button, self.new_game_button_rect)
+            self.display_surface.blit(self.exit_button, self.exit_button_rect)
+
+    def end_game(self):
+        # CREATE DATA PLAYER
+        self.game_data.insert_data(
+            self.user_name, self.player.score, self.player.current_wave
+        )
+        #
+        self.game_over = True
+
+    def new_game(self):
+        #
+        print("New game")
+        for sprite in self.all_sprites:
+            sprite.kill()  # Loại bỏ sprite khỏi mọi nhóm
+        self.all_sprites.empty()
+
+        for sprite in self.collision_sprites:
+            sprite.kill()  # Loại bỏ sprite khỏi mọi nhóm
+        self.collision_sprites.empty()
+
+        for sprite in self.entity_sprites:
+            sprite.kill()  # Loại bỏ sprite khỏi mọi nhóm
+        self.entity_sprites.empty()
+
+        for sprite in self.zombie_sprites:
+            sprite.kill()  # Loại bỏ sprite khỏi mọi nhóm
+        self.zombie_sprites.empty()
+
+        for sprite in self.brain_sprites:
+            sprite.kill()  # Loại bỏ sprite khỏi mọi nhóm
+        self.brain_sprites.empty()
+
+        for sprite in self.tree_sprites:
+            sprite.kill()  # Loại bỏ sprite khỏi mọi nhóm
+        self.tree_sprites.empty()
+
+        for sprite in self.stone_sprites:
+            sprite.kill()  # Loại bỏ sprite khỏi mọi nhóm
+        self.stone_sprites.empty()
+
+        # setup
+        self.setup()
+        # create overlay
+        self.overlay = Overlay(player=self.player, game_data=self.game_data)
+        #
+        self.game_over = False
+
+    def exit_game(self):
+        pygame.quit()
+        sys.exit()
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -292,10 +387,6 @@ class CameraGroup(pygame.sprite.Group):
 
 
 """
-Game: 
-- Cho camera góc rộng ra 1 chút
-- Thêm số tháp tối đa được đặt là 6, căn cứ chỉ 1, tháp đào vàng là 8
-
 Màn
 - Thêm bxh điểm phía góc trên bao gồm: Xếp hạng, Tên, Điểm, Vòng hiện tại
 - Thêm màn hình chính vào game: bắt đầu + nhập tên + bxh
