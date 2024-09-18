@@ -254,7 +254,7 @@ class Entity(Generic):
             self.health_bar_height = HEALTH_BAR_HEIGHT
             self.health_bar_distance = TILE_SIZE
 
-        # 
+        #
         self.player_reduct_entity_count = player_reduct_entity_count
         # recovery
         self.regen_timer = 0.0
@@ -274,7 +274,9 @@ class Entity(Generic):
                 self.health = self.max_health
                 self.max_level = len(tower["HEALTH"])
                 self.before_regen_time = tower["MSBEFOREREGEN"][self.level - 1] / 1000
-                self.health_regen_per_second = tower["HEALTHREGENPERSECOND"][self.level - 1]
+                self.health_regen_per_second = tower["HEALTHREGENPERSECOND"][
+                    self.level - 1
+                ]
 
         # entity head
         self.entity_head = None
@@ -353,7 +355,6 @@ class Entity(Generic):
         self.healthBar_background.image.set_alpha(0)
         self.healthBar.image.set_alpha(0)
 
-
     def calculate_health_bar_position(self):
         health_bar_pos = pygame.math.Vector2(self.rect.center)
         health_bar_pos.x -= self.health_bar_width / 2
@@ -363,20 +364,18 @@ class Entity(Generic):
         return health_bar_pos
 
     def update_health_bar(self):
-        healthBar_pos = self.calculate_health_bar_position()
+        health_bar_pos = self.calculate_health_bar_position()
 
-        self.healthBar_background.rect.topleft = healthBar_pos
-        self.healthBar.rect.topleft = healthBar_pos
+        self.healthBar_background.rect.topleft = health_bar_pos
+        self.healthBar.rect.topleft = health_bar_pos
 
-        ratio = self.health / self.max_health
-        surface_green = pygame.Surface(
-            (self.health_bar_width * ratio, self.health_bar_height)
-        )
+        ratio = max(self.health / self.max_health, 0)
+        width = max(HEALTH_BAR_WIDTH * ratio, 1)
+        surface_green = pygame.Surface((width, HEALTH_BAR_HEIGHT))
         surface_green.fill("green")
         surface_green.set_alpha(self.health_bar_opacity)
         self.healthBar.image = surface_green
 
-        # Chỉ hiển thị health bar khi máu không đủ 100%
         if self.health < self.max_health:
             self.healthBar_background.image.set_alpha(self.health_bar_opacity)
             self.healthBar.image.set_alpha(self.health_bar_opacity)
@@ -431,7 +430,7 @@ class Entity(Generic):
 
     def get_object_upgrade(self):
         return self.object_upgrade
-    
+
     def regen(self, dt):
         self.regen_timer += dt
         if self.regen_timer >= self.before_regen_time:
