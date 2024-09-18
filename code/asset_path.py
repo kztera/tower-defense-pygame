@@ -37,3 +37,6 @@ ASSET_PATH_ZOMBIES = os.path.join(
 ASSET_MUSIC_DAY = os.path.join(ROOT_FOLDER_PATH, "../audio/day/")
 
 ASSET_MUSIC_NIGHT = os.path.join(ROOT_FOLDER_PATH, "../audio/night/")
+
+# asset path : ui button
+ASSET_PATH_START_BUTTON = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/start_button.png")

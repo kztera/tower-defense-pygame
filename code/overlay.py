@@ -6,7 +6,7 @@ from game_stats import *
 
 
 class Overlay:
-    def __init__(self, player):
+    def __init__(self, player, game_data):
         # General setup
         self.display_surface = pygame.display.get_surface()
         self.player = player
@@ -24,6 +24,9 @@ class Overlay:
             ).convert_alpha()
             for entity in player.entities
         }
+        # data
+        self.game_data = game_data
+        self.top_10_data = self.game_data.get_data()
 
     def display(self):
         self.display_surface = pygame.display.get_surface()

@@ -12,7 +12,6 @@ GOLDPERSECOND: gold nhận được mỗi giây
 PROJECTILENAME: Tên của đạn
 PROJECTILEVELOCITY: Vận tốc của đạn
 PROJECTILELIFETIME: Thời gian tồn tại của đạn (ms)
-
 MSBEFOREREGEN: Thời gian chờ để tháp bắt đầu hồi máu sau khi bị tấn công (ms = milliseconds)
 HEALTHREGENPERSECOND: Máu hồi mỗi giây
 

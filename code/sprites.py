@@ -196,7 +196,6 @@ class Sample_Entity(Generic):
         self.is_colliding = self.player.check_entity_collision(self.pos, size)
         self.is_have_enough_resource = self.player.entity_can_uprade(0)
         # TODO: Cần kiểm tra thêm xem đã đặt căn cứ chưa?
-        print(self.is_have_enough_resource)
         self.image = (
             self.collision_image
             if self.is_colliding or not self.is_have_enough_resource
@@ -217,6 +216,7 @@ class Entity(Generic):
         entity_name,
         zombie_sprites,
         player_add_gold,
+        player_reduct_entity_count,
         z=LAYERS[LAYER_ENTITY_BASE],
     ):
         super().__init__(pos, surf, groups, z)
@@ -250,10 +250,18 @@ class Entity(Generic):
             self.health_bar_height = HEALTH_BAR_HEIGHT
             self.health_bar_distance = TILE_SIZE
 
+        # 
+        self.player_reduct_entity_count = player_reduct_entity_count
+        # recovery
+        self.regen_timer = 0.0
+        self.before_regen_time = 0.0
+        self.health_regen_per_second = 0.0
+
         # upgrade
         self.object_upgrade = None
         self.is_showing_upgrade = False
         self.is_clicked = False
+
         # setup data
         formatted_name = self.entity_name.replace("-", "").upper()
         for tower in TOWER_CONFIG:
@@ -261,7 +269,10 @@ class Entity(Generic):
                 self.max_health = tower["HEALTH"][self.level - 1]
                 self.health = self.max_health
                 self.max_level = len(tower["HEALTH"])
-        #
+                self.before_regen_time = tower["MSBEFOREREGEN"][self.level - 1] / 1000
+                self.health_regen_per_second = tower["HEALTHREGENPERSECOND"][self.level - 1]
+
+        # entity head
         self.entity_head = None
         #
         self.create_entity_head(player_add_gold)
@@ -310,6 +321,7 @@ class Entity(Generic):
 
     def take_damage(self, damage):
         self.health -= damage
+        self.regen_timer = 0.0
         if self.health <= 0:
             self.destroy_self()
 
@@ -335,14 +347,6 @@ class Entity(Generic):
         self.healthBar_background.image.set_alpha(0)
         self.healthBar.image.set_alpha(0)
 
-    def take_damage(self, damage):
-        self.health -= damage
-        if self.health <= 0:
-            self.healthBar_background.kill()
-            self.healthBar.kill()
-            if not self.entity_head is None:
-                self.entity_head.kill()
-            self.kill()
 
     def calculate_health_bar_position(self):
         health_bar_pos = pygame.math.Vector2(self.rect.center)
@@ -404,6 +408,8 @@ class Entity(Generic):
         self.entity_head.upgrade()
 
     def destroy_self(self):
+        self.player_reduct_entity_count(self.entity_name)
+        #
         self.healthBar_background.kill()
         self.healthBar.kill()
         if not self.entity_head is None:
@@ -414,8 +420,18 @@ class Entity(Generic):
 
     def get_object_upgrade(self):
         return self.object_upgrade
+    
+    def regen(self, dt):
+        self.regen_timer += dt
+        if self.regen_timer >= self.before_regen_time:
+            if self.health < self.max_health:
+                self.health += self.health_regen_per_second
+            if self.health > self.max_health:
+                self.health = self.max_health
+            self.regen_timer = 0.0
 
     def update(self, dt):
+        self.regen(dt)
         self.update_health_bar()
 
 
@@ -596,7 +612,7 @@ class Entity_Head(Generic):
                     self.gold_per_second = tower["GOLDPERSECOND"][self.level - 1]
 
     def destroy_self(self):
-        self.draw_tower_radius.kill()
+        # self.draw_tower_radius.kill()
         self.kill()
 
     def update(self, dt):
@@ -715,6 +731,7 @@ class Zombie(Generic):
         speed,
         firerate,
         damage,
+        add_score_to_player,
         z=LAYERS[LAYER_ZOMBIE],
     ):
         super().__init__(pos, surf, groups, z)
@@ -745,6 +762,8 @@ class Zombie(Generic):
         self.attack_pos = USE_TOOL_OFFSET[DIRECTION_DOWN]
         self.has_caused_damage = False
         self.damage = damage
+
+        self.add_score_to_player = add_score_to_player
 
         # health
         self.dead = False
@@ -821,6 +840,9 @@ class Zombie(Generic):
             self.health -= damage
 
             if self.health <= 0:
+                # ad score to player
+                self.add_score_to_player(self.max_health)
+                # dead
                 self.dead = True
                 self.healthBar_background.kill()
                 self.healthBar.kill()

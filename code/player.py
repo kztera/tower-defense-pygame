@@ -78,6 +78,28 @@ class Player(pygame.sprite.Sprite):
         self.entity_index = -1
         self.selected_entity = self.entities[self.entity_index]
 
+        self.entity_count = {
+            ENTITIES_WALL: 0,
+            ENTITIES_DOOR: 0,
+            ENTITIES_ARROW_TOWER: 0,
+            ENTITIES_BOMB_TOWER: 0,
+            ENTITIES_CANNON_TOWER: 0,
+            ENTITIES_MAGE_TOWER: 0,
+            ENTITIES_GOLD_MINE: 0,
+            ENTITIES_GOLD_STASH: 0,
+        }
+
+        self.max_number_per_entity = {
+            ENTITIES_WALL: 100,
+            ENTITIES_DOOR: 20,
+            ENTITIES_ARROW_TOWER: 8,
+            ENTITIES_BOMB_TOWER: 8,
+            ENTITIES_CANNON_TOWER: 8,
+            ENTITIES_MAGE_TOWER: 8,
+            ENTITIES_GOLD_MINE: 8,
+            ENTITIES_GOLD_STASH: 1,
+        }
+
         # timers
         self.timers = {
             TOOL_USE_TIMER: Timer(TIME_FOR_TOOL, self.use_tool),
@@ -108,7 +130,7 @@ class Player(pygame.sprite.Sprite):
         #
         self.zombie_sprites = zombie_sprites
 
-        #
+        # upgrade entities
         self.entity_clicked = None
         self.is_clicking_on_entity = False
 
@@ -116,6 +138,9 @@ class Player(pygame.sprite.Sprite):
         self.wood_cost = 0
         self.stone_cost = 0
         self.token_cost = 0
+
+        # score
+        self.score = 0
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -308,7 +333,7 @@ class Player(pygame.sprite.Sprite):
                 else:
                     change = False
             else:
-                if keys[pygame.K_0]:
+                if keys[pygame.K_8]:
                     self.entity_index = 7
                 else:
                     change = False
@@ -426,10 +451,18 @@ class Player(pygame.sprite.Sprite):
                     self.has_interacted_stone.add(stone)
 
     def use_entity(self):
-        # print(self.selected_entity)
         return
 
     def create_entity(self):
+        # check number per entity
+        if (
+            self.entity_count[self.selected_entity]
+            >= self.max_number_per_entity[self.selected_entity]
+        ):
+            print("Vuot qua so luong có the dat : ", self.selected_entity)
+            return
+
+        #
         pos_mouse_on_map = self.snap_to_grid_on_map()
 
         first_dash_position = self.selected_entity.find("-")
@@ -459,9 +492,13 @@ class Player(pygame.sprite.Sprite):
                 entity_name=entity_name,
                 zombie_sprites=self.zombie_sprites,
                 player_add_gold=self.player_add_gold,
+                player_reduct_entity_count=self.player_reduct_entity_count,
             )
+            #
             if entity_type is ENTITY_TYPE_BRAIN:
                 self.brain_sprites.add(brain_entity)
+            #
+            self.entity_count[self.selected_entity] += 1
             # reduce item
             self.items_inventory[ITEM_GOLD] -= self.gold_cost
             self.items_inventory[ITEM_WOOD] -= self.wood_cost
@@ -473,7 +510,8 @@ class Player(pygame.sprite.Sprite):
                 self.is_creating_entity = False
                 self.all_sprites.remove(self.sample_entity_image)
                 self.sample_entity_image = None
-                print("Started")
+
+            print(self.entity_count)
 
     def entity_can_uprade(self, entity_level):
         if entity_level == 9:
@@ -632,6 +670,16 @@ class Player(pygame.sprite.Sprite):
 
     def upgrade_wave(self):
         self.current_wave += 1
+
+    def player_reduct_entity_count(self, entity_name):
+        for entity in self.entities:
+            first_dash_position = entity.find("-")
+            entity_name_step = entity[first_dash_position + 1 :]
+            if entity_name_step == entity_name:
+                self.entity_count[entity] -= 1
+
+    def add_score_to_player(self, zombie_max_health):
+        self.score += zombie_max_health * self.current_wave
 
     def update(self, dt):
         self.screen_height = pygame.display.get_surface().get_height()

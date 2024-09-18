@@ -4,7 +4,6 @@ from level import Level
 from asset_path import *
 from game_stats import *
 import random
-from sprites import Button
 
 
 class Game:
@@ -15,15 +14,11 @@ class Game:
         )
         pygame.display.set_caption("Tower Defense PyGame")
 
-        # started game
-        self.game_started = False
-        # self.start_button = 
-        self.screen.blit()
+        self.display_surface = pygame.display.get_surface()
 
         # sound
-        self.default_volume = 0.5
+        self.default_volume = 0.1
         self.current_volume = self.default_volume
-        self.display_surface = pygame.display.get_surface()
         self.time_bar_x = self.display_surface.get_width() - 100
 
         # time
@@ -171,15 +166,19 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
 
-            if self.game_started:
-                dt = self.clock.tick() / 1000
-                self.level.run(dt)
+            dt = self.clock.tick() / 1000
+            self.level.run(dt)
+
+            if self.level.game_started:
                 self.update_day_night_cycle(dt)
                 self.draw_day_night_bar()
-                pygame.display.update()
-            else:
-                
+
+            pygame.display.update()
 
 
 if __name__ == "__main__":
