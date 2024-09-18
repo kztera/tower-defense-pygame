@@ -228,27 +228,16 @@ class Player(pygame.sprite.Sprite):
                 pos_mouse_on_map = self.snap_to_grid_on_map()
                 first_dash_position = self.selected_entity.find("-")
                 entity_name = self.selected_entity[first_dash_position + 1 :]
-                path_base = ""
 
                 # entity type
                 entity_type = self.get_entity_type()
 
-                if entity_type == ENTITY_TYPE_DEFENSE:
-                    path_base = (
-                        ASSET_PATH_ENTITIES
-                        + entity_name
-                        + "/"
-                        + entity_name
-                        + "-t1-base.png"
-                    )
-                else:
-                    path_base = (
-                        ASSET_PATH_ENTITIES
-                        + entity_name
-                        + "/base/"
-                        + entity_name
-                        + "-t1-base.png"
-                    )
+                path_base = (
+                    ASSET_PATH_UI_ENTITIES
+                    + "sample/"
+                    + entity_name
+                    + "-t1-sample.png"
+                )
 
                 sample_entity_surf = pygame.image.load(path_base).convert_alpha()
                 sample_entity_surf.set_alpha(100)
