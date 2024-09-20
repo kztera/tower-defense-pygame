@@ -31,9 +31,9 @@ class Game:
             (SCREEN_WIDTH_DEFAULT, SCREEN_HEIGHT_DEFAULT)
         )
         self.day_night_surface.set_alpha(0)
-        self.day_length = 10
-        self.night_length = 10
-        self.intersection_length = 15
+        self.day_length = DAY_TIME
+        self.night_length = NIGHT_TIME
+        self.intersection_length = INTERSECTION_LENGTH
         self.time_elapsed = 0
 
         self.font_text_title = pygame.font.Font(

@@ -43,6 +43,7 @@ ITEM_WOOD = "wood"
 ITEM_STONE = "stone"
 ITEM_GOLD = "gold"
 ITEM_TOKEN = "token"
+ITEM_SCORE = "score"
 
 # font
 FONT_TEXT = "SVN-New Athletic M54"
@@ -71,29 +72,6 @@ ZOMBIE_ARRAYS = {
     ZOMBIE_BOSS,
 }
 
-
-"""
-# Description: This file contains the configuration for all the towers in the game.
-
-GOLDCOSTS: Vàng để mua tháp/nâng cấp
-WOODCOSTS: Gỗ để mua tháp/nâng cấp
-STONECOSTS: Đá để mua tháp/nâng cấp
-TOKENCOSTS: Token để mua tháp/nâng cấp
-HEALTH: Máu của tháp
-MSBEFOREREGEN: Thời gian chờ để tháp bắt đầu hồi máu sau khi bị tấn công (ms = milliseconds)
-HEALTHREGENPERSECOND: Máu hồi mỗi giây
-TOWERRADIUS: Bán kính của tháp
-MSBETWEENFIRES: Thời gian giữa các lần bắn của tháp (ms)
-DAMAGETOZOMBIES: Sát thương của tháp đối với zombie
-DAMAGETOPLAYERS: Sát thương của tháp đối với người chơi
-DAMAGETONEUTRALS: Sát thương của tháp đối với neutral
-PROJECTILELIFETIME: Thời gian tồn tại của đạn (ms)
-PROJECTILEVELOCITY: Vận tốc của đạn
-PROJECTILENAME: Tên của đạn
-PROJECTILEAOE: Đạn có gây sát thương cho nhiều mục tiêu không
-PROJECTILEAOERADIUS: Bán kính của đạn
-PROJECTILECOLLISIONRADIUS: Bán kính va chạm của đạn
-PROJECTILECOUNT: Số lượng đạn mỗi lần bắn
-PROJECTILEIGNORESCOLLISIONS: Đạn có bỏ qua va chạm không
-PROJECTILEMAXRANGE: Khoảng cách tối đa mà đạn có thể đi được
-"""
+DAY_TIME = 45
+NIGHT_TIME = 45
+INTERSECTION_LENGTH = 15
