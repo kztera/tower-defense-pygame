@@ -434,6 +434,9 @@ class Entity(Generic):
         self.image = pygame.image.load(image_path)
         self.rect = self.image.get_rect(center=self.rect.center)
         #
+        if not self.object_upgrade is None:
+            self.object_upgrade.destroy_self()
+            self.object_upgrade = None
         self.show_upgrade(True)
         #
         if not self.entity_head is None:
