@@ -25,8 +25,14 @@ class Overlay:
             for entity in player.entities
         }
         # data
+        self.leaderboard_font = pygame.font.Font(
+            (ASSET_PATH_FONT + FONT_TEXT + ".ttf"), 14
+        )
+        self.leaderboard_title_font = pygame.font.Font(
+            (ASSET_PATH_FONT + FONT_TEXT + ".ttf"), 18
+        )
         self.game_data = game_data
-        self.top_10_data = self.game_data.get_data()
+        self.player = player
 
     def display(self):
         self.display_surface = pygame.display.get_surface()
@@ -57,6 +63,8 @@ class Overlay:
         )
 
         self.display_item_inventory(overlay_positions[ITEM_INVENTORY])
+
+        self.display_leaderboard((self.display_surface.get_width() - 250, 20))
 
     def _display_items(
         self, items, surfaces, selected_item, position, distance, show_numbers=False
@@ -175,3 +183,114 @@ class Overlay:
             (pos[0] + background_width, line_y),
             1,
         )
+
+    def display_leaderboard(self, pos):
+        background_width = 230
+        background_height = 250
+        padding = 10
+        row_height = 25
+        font_color = (200, 200, 200)
+        background_color = (0, 0, 0, 120)
+        highlight_color = (255, 215, 0, 120)  # Gold color for current player
+
+        background = pygame.Surface(
+            (background_width, background_height), pygame.SRCALPHA
+        )
+        pygame.draw.rect(
+            background, background_color, background.get_rect(), border_radius=10
+        )
+
+        background_rect = background.get_rect(topleft=pos)
+        self.display_surface.blit(background, background_rect)
+
+        # Title
+        title_surf = self.leaderboard_title_font.render("LEADERBOARD", True, font_color)
+        title_rect = title_surf.get_rect(
+            midtop=(pos[0] + background_width // 2, pos[1] + padding)
+        )
+        self.display_surface.blit(title_surf, title_rect)
+
+        # Column headers
+        headers = ["Rank", "Name", "Score", "Wave"]
+        header_widths = [40, 80, 60, 40]
+        for i, header in enumerate(headers):
+            header_surf = self.leaderboard_font.render(header, True, font_color)
+            header_rect = header_surf.get_rect(
+                topleft=(
+                    pos[0] + sum(header_widths[:i]) + padding,
+                    pos[1] + padding + row_height,
+                )
+            )
+            self.display_surface.blit(header_surf, header_rect)
+
+        top_10_data = list(self.game_data.get_data())
+
+        current_player_data = ("You", self.player.score, self.player.current_wave)
+
+        all_data = top_10_data + [current_player_data]
+
+        def get_score(entry):
+            try:
+                return float(entry[1])
+            except (IndexError, ValueError):
+                return 0.0
+
+        sorted_data = sorted(all_data, key=get_score, reverse=True)[:10]
+
+        for i, entry in enumerate(sorted_data):
+            y = pos[1] + padding + (i + 2) * row_height
+
+            if len(entry) == 3:
+                name, score, wave = entry
+            else:
+                name, score, wave = "Error", 0, 0
+                print(f"Unexpected data format: {entry}")
+
+            if name == "You":
+                highlight = pygame.Surface(
+                    (background_width - 2 * padding, row_height), pygame.SRCALPHA
+                )
+                pygame.draw.rect(
+                    highlight, highlight_color, highlight.get_rect(), border_radius=5
+                )
+                self.display_surface.blit(highlight, (pos[0] + padding, y))
+
+            # Rank
+            rank_surf = self.leaderboard_font.render(str(i + 1), True, font_color)
+            rank_rect = rank_surf.get_rect(
+                midleft=(pos[0] + padding + 10, y + row_height // 2)
+            )
+            self.display_surface.blit(rank_surf, rank_rect)
+
+            # Name
+            name_surf = self.leaderboard_font.render(str(name), True, font_color)
+            name_rect = name_surf.get_rect(
+                midleft=(pos[0] + header_widths[0] + padding, y + row_height // 2)
+            )
+            self.display_surface.blit(name_surf, name_rect)
+
+            # Score
+            try:
+                score_value = float(score)
+            except ValueError:
+                score_value = 0.0
+            score_surf = self.leaderboard_font.render(
+                f"{score_value:.0f}", True, font_color
+            )
+            score_rect = score_surf.get_rect(
+                midright=(
+                    pos[0] + sum(header_widths[:3]) + padding - 30,
+                    y + row_height // 2,
+                )
+            )
+            self.display_surface.blit(score_surf, score_rect)
+
+            # Wave
+            wave_surf = self.leaderboard_font.render(str(wave), True, font_color)
+            wave_rect = wave_surf.get_rect(
+                midright=(
+                    pos[0] + sum(header_widths) + padding - 20,
+                    y + row_height // 2,
+                )
+            )
+            self.display_surface.blit(wave_surf, wave_rect)
