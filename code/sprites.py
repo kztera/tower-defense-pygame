@@ -395,6 +395,14 @@ class Entity(Generic):
                     entity_type=self.entity_type,
                     level=self.level,
                 )
+            else:
+                self.object_upgrade = Upgrade(
+                    pos=self.rect.center,
+                    groups=self.groups[0],
+                    entiry_name=self.entity_name,
+                    entity_type=self.entity_type,
+                    level=self.level,
+                )
         else:
             self.is_showing_upgrade = False
             if not self.object_upgrade is None:
@@ -423,6 +431,16 @@ class Entity(Generic):
         image_path = self.get_image_path()
         self.image = pygame.image.load(image_path)
         self.rect = self.image.get_rect(center=self.rect.center)
+        #
+        if not self.object_upgrade is None:
+            self.object_upgrade.destroy_self()
+            self.object_upgrade = None
+        self.show_upgrade(True)
+        #
+        if not self.object_upgrade is None:
+            self.object_upgrade.destroy_self()
+            self.object_upgrade = None
+        self.show_upgrade(True)
         #
         formatted_name = self.entity_name.replace("-", "").upper()
         for tower in TOWER_CONFIG:
