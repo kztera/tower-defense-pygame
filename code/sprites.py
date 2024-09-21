@@ -429,7 +429,6 @@ class Entity(Generic):
         return False
 
     def request_sell(self):
-        print("Sell")
         self.destroy_self()
 
     def upgrade(self):
@@ -444,12 +443,22 @@ class Entity(Generic):
             self.object_upgrade = None
         self.show_upgrade(True)
         #
+        if not self.object_upgrade is None:
+            self.object_upgrade.destroy_self()
+            self.object_upgrade = None
+        self.show_upgrade(True)
+        #
+        formatted_name = self.entity_name.replace("-", "").upper()
+        for tower in TOWER_CONFIG:
+            if tower["NAME"] == formatted_name:
+                self.max_health = tower["HEALTH"][self.level - 1]
+                self.health = self.max_health
+
         if not self.entity_head is None:
             self.entity_head.upgrade()
 
     def destroy_self(self):
         if self.entity_type is ENTITY_TYPE_BRAIN:
-            print("Loser")
             self.level_map.end_game()
 
         else:
@@ -691,13 +700,19 @@ class Entity_Head(Generic):
                     self.create_entity_projectile()
                     self.timer = 0
         elif self.entity_type == ENTITY_TYPE_PRODUCE:
+            base_rotation_speed = 0.005
+            speed_multiplier = 1 + (self.level - 1) * 0.5  # Tăng 50% tốc độ mỗi cấp
+            rotation_speed = base_rotation_speed / speed_multiplier
+
             self.rotation_angle_timer += dt
-            if self.rotation_angle_timer >= 0.1:
-                self.current_angle += 1
+            if self.rotation_angle_timer >= rotation_speed:
+                rotation_amount = int(1 * speed_multiplier)
+                self.current_angle += rotation_amount
                 if self.current_angle >= 360:
-                    self.current_angle = 0
+                    self.current_angle %= 360
                 self.update_direction_rotate360()
-            #
+                self.rotation_angle_timer = 0
+
             self.timer += dt
             if self.timer >= 1:
                 self.player_add_gold(self.gold_per_second)
@@ -839,17 +854,19 @@ class Zombie(Generic):
         self.health_bar_distance = 50
 
         health_bar_pos = pygame.math.Vector2(self.rect.center)
-        health_bar_pos.x -= HEALTH_BAR_WIDTH / 2
+        health_bar_pos.x -= HEALTH_BAR_WIDTH_ZOMBIE / 2
         health_bar_pos.y += self.health_bar_distance
 
-        surface_red = pygame.Surface((HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT))
+        surface_red = pygame.Surface((HEALTH_BAR_WIDTH_ZOMBIE, HEALTH_BAR_HEIGHT))
         surface_red.fill("red")
         self.healthBar_background = HealthBar(
             health_bar_pos, surface_red, groups[0], z=LAYERS[LAYER_MAX_HEALTH]
         )
 
         ratio = self.health / self.max_health
-        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green = pygame.Surface(
+            (HEALTH_BAR_WIDTH_ZOMBIE * ratio, HEALTH_BAR_HEIGHT)
+        )
         surface_green.fill("green")
         self.healthBar = HealthBar(
             health_bar_pos, surface_green, groups[0], z=LAYERS[LAYER_HEALTH]
@@ -916,14 +933,16 @@ class Zombie(Generic):
 
     def update_health_bar(self):
         health_bar_pos = pygame.math.Vector2(self.rect.center)
-        health_bar_pos.x -= HEALTH_BAR_WIDTH / 2
+        health_bar_pos.x -= HEALTH_BAR_WIDTH_ZOMBIE / 2
         health_bar_pos.y += self.health_bar_distance
 
         self.healthBar_background.rect.topleft = health_bar_pos
         self.healthBar.rect.topleft = health_bar_pos
 
         ratio = self.health / self.max_health
-        surface_green = pygame.Surface((HEALTH_BAR_WIDTH * ratio, HEALTH_BAR_HEIGHT))
+        surface_green = pygame.Surface(
+            (HEALTH_BAR_WIDTH_ZOMBIE * ratio, HEALTH_BAR_HEIGHT)
+        )
         surface_green.fill("green")
         self.healthBar.image = surface_green
 

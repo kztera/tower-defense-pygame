@@ -244,7 +244,6 @@ class Overlay:
                 name, score, wave = entry
             else:
                 name, score, wave = "Error", 0, 0
-                print(f"Unexpected data format: {entry}")
 
             if name == "You":
                 highlight = pygame.Surface(

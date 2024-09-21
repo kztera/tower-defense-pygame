@@ -21,7 +21,7 @@ ASSET_PATH_UI_ENTITIES = os.path.join(ROOT_FOLDER_PATH, "../graphics/ui/entities
 ASSET_PATH_GROUND = os.path.join(ROOT_FOLDER_PATH, "../graphics/world/ground.png")
 
 # asset path : map
-ASSET_PATH_MAP = os.path.join(ROOT_FOLDER_PATH, "../data/map/map.tmx")
+ASSET_PATH_MAP = os.path.join(ROOT_FOLDER_PATH, "../data/map/map_small.tmx")
 
 # asset path : font
 ASSET_PATH_FONT = os.path.join(ROOT_FOLDER_PATH, "../font/")
