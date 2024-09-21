@@ -404,14 +404,12 @@ class Entity(Generic):
     def request_upgrade(self):
         if self.entity_type is ENTITY_TYPE_BRAIN:
             if self.level < self.max_level:
-                self.level += 1
                 self.upgrade()
                 return True
         else:
             brain = list(self.brain_sprites)
             if self.level < brain[0].level:
                 if self.level < self.max_level:
-                    self.level += 1
                     self.upgrade()
                     return True
         return False
@@ -422,6 +420,12 @@ class Entity(Generic):
         self.destroy_self()
 
     def upgrade(self):
+        self.level += 1
+        #
+        image_path = self.get_image_path()
+        self.image = pygame.image.load(image_path)
+        self.rect = self.image.get_rect(center=self.rect.center)
+        #
         if not self.entity_head is None:
             self.entity_head.upgrade()
 
