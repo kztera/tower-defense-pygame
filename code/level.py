@@ -190,7 +190,9 @@ class Level:
                     can_spawn = True
             #
             path_zombie = ASSET_PATH_ZOMBIES
-            model_name = ((zombie["MODEL"]).split("Tier")[0]).upper()
+            parts = (zombie["MODEL"]).split("Tier")
+            model_name = parts[0].upper()
+            tier = parts[1]
             for zombie_name in ZOMBIE_ARRAYS:
                 if (zombie_name.replace("-", "")).upper() == model_name:
                     path_zombie += (
@@ -198,7 +200,7 @@ class Level:
                         + "/"
                         + zombie_name
                         + "-t"
-                        + str(sprite_list[0].level + 1)
+                        + str(tier)
                         + ".png"
                     )
 

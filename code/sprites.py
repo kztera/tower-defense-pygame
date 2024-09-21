@@ -5,6 +5,7 @@ from game_stats import *
 from asset_path import *
 
 from tower_config import *
+import random
 
 
 class Generic(pygame.sprite.Sprite):
@@ -401,16 +402,28 @@ class Entity(Generic):
                 self.object_upgrade = None
 
     def request_upgrade(self):
-        if self.level < self.max_level:
-            self.level += 1
-            self.upgrade()
+        if self.entity_type is ENTITY_TYPE_BRAIN:
+            if self.level < self.max_level:
+                self.level += 1
+                self.upgrade()
+                return True
+        else:
+            brain = list(self.brain_sprites)
+            if self.level < brain[0].level:
+                if self.level < self.max_level:
+                    self.level += 1
+                    self.upgrade()
+                    return True
+        return False
+        
 
     def request_sell(self):
         print("Sell")
         self.destroy_self()
 
     def upgrade(self):
-        self.entity_head.upgrade()
+        if not self.entity_head is None:
+            self.entity_head.upgrade()
 
     def destroy_self(self):
         if self.entity_type is ENTITY_TYPE_BRAIN:
@@ -481,6 +494,7 @@ class Entity_Head(Generic):
         #
         self.projectile_surf = None
         self.target = None
+        self.current_attack_distance = 0.0
 
         self.tower_radius = 0
         self.ms_between_fire = 2
@@ -580,13 +594,33 @@ class Entity_Head(Generic):
         )
 
     def pick_tartget(self):
+        zombies = []
+        first_dash_position = ENTITIES_BOMB_TOWER.find("-")
+        entity_bomb = ENTITIES_BOMB_TOWER[first_dash_position + 1 :]
+        
         has_target = False
+        self.current_attack_distance = 0.0
         for zombie in self.zombie_sprites:
             distance_x = zombie.rect.centerx - self.rect.centerx
             distance_y = zombie.rect.centery - self.rect.centery
             distance = math.sqrt(distance_x**2 + distance_y**2)
             if distance < self.tower_radius:
-                self.target = zombie
+                if self.entity_name == entity_bomb:
+                    zombies.append(zombie)
+                else:
+                    if self.current_attack_distance == 0.0:
+                        self.current_attack_distance = distance
+                        self.target = zombie
+                        has_target = True
+                    else:
+                        if distance < self.current_attack_distance:
+                            self.current_attack_distance = distance
+                            self.target = zombie
+                            has_target = True
+
+        if self.entity_name == entity_bomb:
+            if len(zombies) > 0:
+                self.target = random.choice(zombies)
                 has_target = True
 
         if not has_target:
@@ -917,9 +951,9 @@ class Zombie(Generic):
             distance = self_pos.distance_to(target_pos)
 
             if self.target.entity_type is ENTITY_TYPE_DEFENSE:
-                self.attack_distance = 70
+                self.attack_distance = 55
             else:
-                self.attack_distance = 100
+                self.attack_distance = 85
 
             if distance > self.attack_distance:
                 self.movement(dt)
@@ -1208,7 +1242,6 @@ class Upgrade(pygame.sprite.Sprite):
         str_gold = str(self.tower_upgrade.GOLDCOSTS) + " gold, "
         str_wood = str(self.tower_upgrade.WOODCOSTS) + " wood, "
         str_stone = str(self.tower_upgrade.STONECOSTS) + " stone, "
-        str_token = str(self.tower_upgrade.TOKENCOSTS) + " token"
 
         pos_button_upgrade = pygame.math.Vector2(self.rect.center)
         pos_button_upgrade.y += 80
@@ -1218,7 +1251,7 @@ class Upgrade(pygame.sprite.Sprite):
             width=350,
             height=30,
             text="Upgrade",
-            text_item=str_gold + str_wood + str_stone + str_token,
+            text_item=str_gold + str_wood + str_stone,
         )
         self.button_upgrade.text.rect.left = pos_button_upgrade.x - 350 / 2 + 20
         self.button_upgrade.text_item.rect.left = (
@@ -1233,7 +1266,7 @@ class Upgrade(pygame.sprite.Sprite):
             width=350,
             height=30,
             text="Sell",
-            text_item="2 token",
+            text_item="destroy",
         )
         self.button_sell.text.rect.left = pos_button_sell.x - 350 / 2 + 20
         self.button_sell.text_item.rect.left = self.button_sell.text.rect.right + 10
@@ -1266,7 +1299,6 @@ class TowerInformation:
         self.GOLDCOSTS = None
         self.WOODCOSTS = None
         self.STONECOSTS = None
-        self.TOKENCOSTS = None
         self.HEALTH = None
         #
         self.GOLDPERSECOND = None
@@ -1284,7 +1316,6 @@ class TowerInformation:
                 self.GOLDCOSTS = tower["GOLDCOSTS"][level - 1]
                 self.WOODCOSTS = tower["WOODCOSTS"][level - 1]
                 self.STONECOSTS = tower["STONECOSTS"][level - 1]
-                self.TOKENCOSTS = tower["TOKENCOSTS"][level - 1]
                 self.HEALTH = tower["HEALTH"][level - 1]
 
                 if entity_type is ENTITY_TYPE_PRODUCE:

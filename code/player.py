@@ -115,13 +115,14 @@ class Player(pygame.sprite.Sprite):
         self.stone_sprites = stone_sprites
         self.has_interacted_tree = pygame.sprite.Group()
         self.has_interacted_stone = pygame.sprite.Group()
+        self.has_interacted_zombie = pygame.sprite.Group()
 
         # inventory
         self.items_inventory = {
-            ITEM_WOOD: 100,
-            ITEM_STONE: 100,
-            ITEM_GOLD: 100,
-            ITEM_TOKEN: 0,
+            ITEM_WOOD: 100000,
+            ITEM_STONE: 100000,
+            ITEM_GOLD: 100000,
+            ITEM_SCORE: 0,
         }
 
         # handle create entities
@@ -139,7 +140,6 @@ class Player(pygame.sprite.Sprite):
         self.gold_cost = 0
         self.wood_cost = 0
         self.stone_cost = 0
-        self.token_cost = 0
 
         # score
         self.score = 0
@@ -176,6 +176,7 @@ class Player(pygame.sprite.Sprite):
                     self.get_target_pos()
                     self.has_interacted_tree.empty()
                     self.has_interacted_stone.empty()
+                    self.has_interacted_zombie.empty()
                     self.timers[TOOL_USE_TIMER].activate()
 
                 elif (
@@ -192,6 +193,7 @@ class Player(pygame.sprite.Sprite):
                     self.get_target_pos()
                     self.has_interacted_tree.empty()
                     self.has_interacted_stone.empty()
+                    self.has_interacted_zombie.empty()
                     self.timers[TOOL_USE_TIMER].activate()
         else:
             if self.auto_using_tool:
@@ -233,10 +235,7 @@ class Player(pygame.sprite.Sprite):
                 entity_type = self.get_entity_type()
 
                 path_base = (
-                    ASSET_PATH_UI_ENTITIES
-                    + "sample/"
-                    + entity_name
-                    + "-t1-sample.png"
+                    ASSET_PATH_UI_ENTITIES + "sample/" + entity_name + "-t1-sample.png"
                 )
 
                 sample_entity_surf = pygame.image.load(path_base).convert_alpha()
@@ -274,20 +273,17 @@ class Player(pygame.sprite.Sprite):
                                     ) and self.entity_can_uprade(
                                         self.entity_clicked.level
                                     ):
-                                        self.entity_clicked.request_upgrade()
-                                        # reduce item
-                                        self.items_inventory[
-                                            ITEM_GOLD
-                                        ] -= self.gold_cost
-                                        self.items_inventory[
-                                            ITEM_WOOD
-                                        ] -= self.wood_cost
-                                        self.items_inventory[
-                                            ITEM_STONE
-                                        ] -= self.stone_cost
-                                        self.items_inventory[
-                                            ITEM_TOKEN
-                                        ] -= self.token_cost
+                                        if self.entity_clicked.request_upgrade():
+                                            # reduce item
+                                            self.items_inventory[
+                                                ITEM_GOLD
+                                            ] -= self.gold_cost
+                                            self.items_inventory[
+                                                ITEM_WOOD
+                                            ] -= self.wood_cost
+                                            self.items_inventory[
+                                                ITEM_STONE
+                                            ] -= self.stone_cost
                                     elif object_upgrade.button_sell.rect.collidepoint(
                                         exact_position_mouse
                                     ):
@@ -401,6 +397,7 @@ class Player(pygame.sprite.Sprite):
             self.get_target_pos()
             self.has_interacted_tree.empty()
             self.has_interacted_stone.empty()
+            self.has_interacted_zombie.empty()
             self.timers[TOOL_USE_TIMER].activate()
 
     def calculate_current_angle(self):
@@ -424,6 +421,14 @@ class Player(pygame.sprite.Sprite):
             have_impact = False
             if self.selected_tool == TOOL_AXE:
                 have_impact = True
+            else:
+                for zombie in self.zombie_sprites:
+                    if (
+                        zombie.rect.collidepoint(self.target_pos)
+                        and not zombie in self.has_interacted_zombie
+                    ):
+                        zombie.take_damage(10)
+                        self.has_interacted_zombie.add(zombie)
 
             for tree in self.tree_sprites:
                 if (
@@ -496,7 +501,6 @@ class Player(pygame.sprite.Sprite):
             self.items_inventory[ITEM_GOLD] -= self.gold_cost
             self.items_inventory[ITEM_WOOD] -= self.wood_cost
             self.items_inventory[ITEM_STONE] -= self.stone_cost
-            self.items_inventory[ITEM_TOKEN] -= self.token_cost
             # Đã đặt bộ não
             if entity_type is ENTITY_TYPE_BRAIN:
                 self.is_started = True
@@ -519,22 +523,17 @@ class Player(pygame.sprite.Sprite):
                 self.gold_cost = int(tower["GOLDCOSTS"][entity_level])
                 self.wood_cost = int(tower["WOODCOSTS"][entity_level])
                 self.stone_cost = int(tower["STONECOSTS"][entity_level])
-                self.token_cost = int(tower["TOKENCOSTS"][entity_level])
 
                 has_enough_gold = int(self.items_inventory[ITEM_GOLD]) >= self.gold_cost
                 has_enough_wood = int(self.items_inventory[ITEM_WOOD]) >= self.wood_cost
                 has_enough_stone = (
                     int(self.items_inventory[ITEM_STONE]) >= self.stone_cost
                 )
-                has_enough_token = (
-                    int(self.items_inventory[ITEM_TOKEN]) >= self.token_cost
-                )
 
                 have_enough_condition = (
                     has_enough_gold
                     and has_enough_wood
                     and has_enough_stone
-                    and has_enough_token
                 )
 
         return have_enough_condition
@@ -671,6 +670,7 @@ class Player(pygame.sprite.Sprite):
 
     def add_score_to_player(self, zombie_max_health):
         self.score += zombie_max_health * self.current_wave
+        self.items_inventory[ITEM_SCORE] += zombie_max_health * self.current_wave
 
     def update(self, dt):
         self.screen_height = pygame.display.get_surface().get_height()

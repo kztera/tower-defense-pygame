@@ -27,6 +27,17 @@ ENTITIES_GOLD_STASH = "entities-gold-stash"
 ENTITIES_WALL = "entities-wall"
 ENTITIES_DOOR = "entities-door"
 
+ENTITY_ARRAY = {
+    ENTITIES_ARROW_TOWER,
+    ENTITIES_BOMB_TOWER,
+    ENTITIES_CANNON_TOWER,
+    ENTITIES_MAGE_TOWER,
+    ENTITIES_GOLD_MINE,
+    ENTITIES_GOLD_STASH,
+    ENTITIES_WALL,
+    ENTITIES_DOOR,
+}
+
 ENTITY_USE_TIMER = "entity use"
 ENTITY_SWITCH_TIMER = "entity switch"
 
@@ -42,7 +53,7 @@ ENTITY_TYPE_BRAIN = "brain"
 ITEM_WOOD = "wood"
 ITEM_STONE = "stone"
 ITEM_GOLD = "gold"
-ITEM_TOKEN = "token"
+ITEM_SCORE = "score"
 
 # font
 FONT_TEXT = "SVN-New Athletic M54"
