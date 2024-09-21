@@ -390,7 +390,7 @@ class Entity(Generic):
                 self.object_upgrade.destroy_self()
                 self.object_upgrade = None
             return
-        
+
         if request_show_upgrade:
             if self.is_showing_upgrade == False:
                 self.is_showing_upgrade = True
@@ -679,7 +679,7 @@ class Entity_Head(Generic):
                     self.damage_to_zombie = tower["DAMAGETOZOMBIES"][self.level - 1]
                     self.projectile_velocity = tower["PROJECTILEVELOCITY"][
                         self.level - 1
-                    ] * (self.level * 1.5)
+                    ] * (self.level + 3)
                     self.projectile_life_time = (
                         tower["PROJECTILELIFETIME"][self.level - 1] / 100
                     )

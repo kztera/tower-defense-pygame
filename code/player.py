@@ -121,7 +121,7 @@ class Player(pygame.sprite.Sprite):
         self.items_inventory = {
             ITEM_WOOD: 100000,
             ITEM_STONE: 100000,
-            ITEM_GOLD: 100000,
+            ITEM_GOLD: 10000000000,
             ITEM_SCORE: 0,
         }
 
@@ -530,9 +530,7 @@ class Player(pygame.sprite.Sprite):
                 )
 
                 have_enough_condition = (
-                    has_enough_gold
-                    and has_enough_wood
-                    and has_enough_stone
+                    has_enough_gold and has_enough_wood and has_enough_stone
                 )
 
         return have_enough_condition
