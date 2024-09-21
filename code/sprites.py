@@ -370,7 +370,7 @@ class Entity(Generic):
         self.healthBar_background.rect.topleft = health_bar_pos
         self.healthBar.rect.topleft = health_bar_pos
 
-        ratio = max(self.health / self.max_health, 0)
+        ratio = max(self.health * 1.0 / self.max_health, 0)
         width = max(HEALTH_BAR_WIDTH * ratio, 1)
         surface_green = pygame.Surface((width, HEALTH_BAR_HEIGHT))
         surface_green.fill("green")
@@ -385,6 +385,12 @@ class Entity(Generic):
             self.healthBar.image.set_alpha(0)
 
     def show_upgrade(self, request_show_upgrade):
+        if self.level >= self.max_level:
+            if not self.object_upgrade is None:
+                self.object_upgrade.destroy_self()
+                self.object_upgrade = None
+            return
+        
         if request_show_upgrade:
             if self.is_showing_upgrade == False:
                 self.is_showing_upgrade = True
