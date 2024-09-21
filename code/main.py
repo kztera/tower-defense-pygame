@@ -129,7 +129,7 @@ class Game:
             label = "Day"
         else:
             progress = (current_time - self.day_length) / self.night_length
-            label = f"Night {self.night_count}"
+            label = f"Night"
 
         bar_width = 200
         bar_height = 20

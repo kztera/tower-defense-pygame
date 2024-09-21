@@ -2,8 +2,8 @@ from pygame.math import Vector2
 import pygame
 
 # screen
-SCREEN_WIDTH_DEFAULT = 1700
-SCREEN_HEIGHT_DEFAULT = 900
+SCREEN_WIDTH_DEFAULT = 1500
+SCREEN_HEIGHT_DEFAULT = 800
 TILE_SIZE = 48
 
 # direction
