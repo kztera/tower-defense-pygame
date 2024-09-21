@@ -413,7 +413,6 @@ class Entity(Generic):
                     self.upgrade()
                     return True
         return False
-        
 
     def request_sell(self):
         print("Sell")
@@ -601,7 +600,7 @@ class Entity_Head(Generic):
         zombies = []
         first_dash_position = ENTITIES_BOMB_TOWER.find("-")
         entity_bomb = ENTITIES_BOMB_TOWER[first_dash_position + 1 :]
-        
+
         has_target = False
         self.current_attack_distance = 0.0
         for zombie in self.zombie_sprites:
@@ -629,7 +628,7 @@ class Entity_Head(Generic):
 
         if not has_target:
             self.target = None
-            
+
     def upgrade(self):
         self.level += 1
         #
@@ -650,9 +649,9 @@ class Entity_Head(Generic):
                     self.tower_radius = tower["TOWERRADIUS"][self.level - 1]
                     self.ms_between_fire = tower["MSBETWEENFIRES"][self.level - 1] / 400
                     self.damage_to_zombie = tower["DAMAGETOZOMBIES"][self.level - 1]
-                    self.projectile_velocity = (
-                        tower["PROJECTILEVELOCITY"][self.level - 1] * 2
-                    )
+                    self.projectile_velocity = tower["PROJECTILEVELOCITY"][
+                        self.level - 1
+                    ] * (self.level * 1.5)
                     self.projectile_life_time = (
                         tower["PROJECTILELIFETIME"][self.level - 1] / 100
                     )
