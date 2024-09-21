@@ -455,7 +455,6 @@ class Player(pygame.sprite.Sprite):
             self.entity_count[self.selected_entity]
             >= self.max_number_per_entity[self.selected_entity]
         ):
-            print("Vuot qua so luong có the dat : ", self.selected_entity)
             return
 
         #

@@ -160,10 +160,8 @@ class Level:
         self.spawn_zombie()
 
     def spawn_zombie(self):
-        print("Spawn zombie")
         sprite_list = list(self.brain_sprites)
         if len(sprite_list) < 1:
-            print("No Spawn zombie")
             return
 
         brain_pos = pygame.math.Vector2(sprite_list[0].rect.center)
@@ -196,12 +194,7 @@ class Level:
             for zombie_name in ZOMBIE_ARRAYS:
                 if (zombie_name.replace("-", "")).upper() == model_name:
                     path_zombie += (
-                        zombie_name
-                        + "/"
-                        + zombie_name
-                        + "-t"
-                        + str(tier)
-                        + ".png"
+                        zombie_name + "/" + zombie_name + "-t" + str(tier) + ".png"
                     )
 
             # heath, damage, speed, firerate
@@ -316,7 +309,6 @@ class Level:
 
     def new_game(self):
         #
-        print("New game")
         for sprite in self.all_sprites:
             sprite.kill()  # Loại bỏ sprite khỏi mọi nhóm
         self.all_sprites.empty()
