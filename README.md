@@ -18,8 +18,7 @@ Phát triển Game bằng Python với thư viện Pygame
 
 Thu thập tài nguyên và xây dựng căn cứ, phòng thủ chống lại thây ma và giành vị trí số 1 trên bảng xếp hạng!
 
-## Các chạy thử:
-
+## Chạy game dev:
 1. Tạo môi trường ảo:
 
 ```bash
